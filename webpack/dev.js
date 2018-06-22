@@ -1,4 +1,4 @@
-const webpackConfig = require('./build');
+const webpackConfig = require('./common');
 const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -24,7 +24,7 @@ module.exports = merge({
     })
   ],
   devServer: {
-    contentBase: path.join(__dirname, '../build'),
+    contentBase: path.join(__dirname, '../dist'),
     historyApiFallback: false,
     compress: true,
     hot: true,

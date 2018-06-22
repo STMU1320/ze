@@ -1,15 +1,18 @@
 export default class Canvas {
-  constructor (cfg = {}) {
-    if (!cfg.ele) {
-      cfg.ele = document.body;
+  constructor (ele, cfg) {
+    if (!ele) {
+      ele = document.body;
+    } else if ( typeof ele === 'object' && !(ele instanceof HTMLElement)) {
+      ele = document.body;
+      cfg = ele;
     }
-    this._getCanvas(cfg.ele);
+    this._getCanvas(ele);
   }
 
   _getCanvas (container) {
     let canvas;
     if (typeof container === 'string') {
-      container = document.querySelector(container);
+      container = document.getElementById(container);
     }
     if (container instanceof HTMLCanvasElement) {
       canvas = container;

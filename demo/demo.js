@@ -1,5 +1,7 @@
-const Canvas = ZE.Canvas;
 
-const canvas = new Canvas({
-  ele: '#container'
+const canvas = new ZE.Canvas('container', {
+  width: 600,
+  height: 600
 });
+
+console.log(canvas);
