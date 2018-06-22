@@ -1,0 +1,58 @@
+{
+  "rules": {
+    "semi": [
+      2,
+      "always"
+    ],
+    "no-mixed-operators": 0,
+    "no-console": 0,
+    "import/no-webpack-loader-syntax": 0,
+    "import/extensions": 0,
+    "import/no-unresolved": 0,
+    "import/no-extraneous-dependencies": 0,
+    "no-unused-expressions": [
+      0,
+      {
+        "allowShortCircuit": true,
+        "allowTernary": true
+      }
+    ],
+    "arrow-body-style": [
+      0,
+      "never"
+    ],
+    "func-names": 0,
+    "prefer-const": 0,
+    "no-extend-native": 0,
+    "no-param-reassign": 0,
+    "no-restricted-syntax": 0,
+    "no-eval": 0,
+    "no-unused-vars": [
+      2,
+      {
+        "ignoreRestSiblings": true
+      }
+    ],
+    "no-underscore-dangle": 0,
+    "global-require": 0,
+    "generator-star-spacing": [
+      "error",
+      "before"
+    ],
+    "object-property-newline": 0,
+    "object-curly-newline": 0
+  },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 9
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "jasmine": true
+  },
+  "settings": {
+    "import/resolver": "node"
+  }
+}

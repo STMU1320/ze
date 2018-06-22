@@ -1,9 +1,9 @@
-const webpack = require('webpack');
+// const webpack = require('webpack');
 const webpackConfig = require('./common');
-const merge = require('webpack-merge')
+const merge = require('webpack-merge');
 const path = require('path');
 const resolve = path.resolve;
-const pkg = require('../package.json');
+// const pkg = require('../package.json');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
