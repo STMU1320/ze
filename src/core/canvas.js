@@ -1,20 +1,22 @@
+import EventBus from './eventBus';
 import Layer from './layer';
 
-export default class Canvas {
+export default class Canvas extends EventBus {
 
   constructor (ele, cfg) {
+    super();
     if (!ele) {
       ele = document.body;
     } else if ( typeof ele === 'object' && !(ele instanceof HTMLElement)) {
       cfg = ele;
       ele = document.body;
     }
-    this.__cfg = Object.assign({
+    this.attrs = Object.assign({
       width: 300,
       height: 300
     }, cfg);
     this._getCanvas(ele);
-    this._init(this.__cfg);
+    this._init(this.attrs);
   }
 
   _getCanvas (container) {
@@ -43,14 +45,32 @@ export default class Canvas {
     const background = new Layer(this);
     this.background = background;
     this.layers = [background];
+    this._eventHandle = this._eventHandle.bind(this);
+    this._initEvent();
+  }
+
+  _initEvent () {
+    this.canvas.addEventListener('click', this._eventHandle, false);
+  }
+
+  _eventHandle (e) {
+    this.emit(e.type, e);
   }
 
   getContext () {
     return this.context;
   }
 
+  getCanvas () {
+    return this.canvas;
+  }
+
+  _getCanvasInstance () {
+    return this;
+  }
+
   addShape (type, options) {
-    this.background.addShape(type, options);
+    return this.background.addShape(type, options);
   }
 
   draw () {
