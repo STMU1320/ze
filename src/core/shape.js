@@ -3,7 +3,7 @@ import * as Shapes from '../shapes';
 
 export default class Shape extends Element {
   constructor (type, options, container) {
-    super(container);
+    super(container, 'shape');
     const { attrs, ...drawControl  } = options;
     this.shape = new Shapes[type](attrs);
     let defaultCtrl = { hasFill: true, hasStroke: false };
@@ -11,6 +11,11 @@ export default class Shape extends Element {
       defaultCtrl = { hasFill: false, hasStroke: true };
     }
     this.attrs = Object.assign(defaultCtrl, drawControl);
+    this.type = type;
+  }
+
+  includes (x, y) {
+    return this.shape.includes(x, y);
   }
 
   draw (ctx) {

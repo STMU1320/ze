@@ -54,7 +54,20 @@ export default class Canvas extends EventBus {
   }
 
   _eventHandle (e) {
-    this.emit(e.type, e);
+    const { x, y } = this.getPointInCanvas(e.clientX, e.clientY);
+    const eventType = e.type;
+    const subscribers = this.elementHash[eventType];
+    let triggerElements = [];
+    subscribers.forEach(element => {
+      if (element.includes(x, y)) {
+        triggerElements.push(element);
+      }
+    });
+    this.emit(eventType, triggerElements, e);
+  }
+
+  _getCanvasInstance () {
+    return this;
   }
 
   getContext () {
@@ -65,12 +78,26 @@ export default class Canvas extends EventBus {
     return this.canvas;
   }
 
-  _getCanvasInstance () {
-    return this;
+  getPointInCanvas (clientX, clientY) {
+    const canvas = this.canvas;
+    const canvasBox = canvas.getBoundingClientRect();
+    const width = canvasBox.right - canvasBox.left;
+    const height = canvasBox.bottom - canvasBox.top;
+    return {
+      x: (clientX - canvasBox.left) * (canvas.width / width),
+      y: (clientY - canvasBox.top) * (canvas.height / height)
+    };
   }
+
 
   addShape (type, options) {
     return this.background.addShape(type, options);
+  }
+
+  addLayer (options) {
+    const newLayer = new Layer(this, options);
+    this.layers.push(newLayer);
+    return newLayer;
   }
 
   draw () {

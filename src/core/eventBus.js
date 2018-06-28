@@ -1,19 +1,21 @@
 import Element from './element';
+import Utils from '../utils';
 
 export default class EventBus {
   constructor() {
     this.events = {};
+    this.elementHash = {};
   }
 
   _createEvent(type, fun, element) {
     return {
       type,
-      function: fun,
+      callback: fun,
       element,
     };
   }
 
-  _passCondition (condition, target) {
+  _passCondition(condition, target) {
     if (Array.isArray(condition)) {
       return condition.includes(target);
     }
@@ -27,26 +29,32 @@ export default class EventBus {
       throw '事件类型必须为字符串，处理函数必须为Function类型';
     }
 
-    const {events} = this;
+    const {events, elementHash} = this;
     const event = this._createEvent(type, fun, element);
 
+    // 添加事件
     if (type in events) {
       const eventType = events[type];
-      const hasEvent = eventType.find(
-        event => {
-          if (event.element) {
-            return event.function === fun && event.element === element;
-          }
-
-          return event.function === fun;
+      const hasEvent = eventType.find(event => {
+        if (event.element) {
+          return event.callback === fun && event.element === element;
         }
-          
-      );
+
+        return event.callback === fun;
+      });
       if (!hasEvent) {
         eventType.push(event);
       }
     } else {
       events[type] = [event];
+    }
+
+    // 添加事件与元素的映射
+    if (Utils.isEmpty(elementHash[type])) {
+      elementHash[type] = [];
+    }
+    if (element && !elementHash[type].includes(element)) {
+      elementHash[type].push(element);
     }
 
     return events[type].length;
@@ -61,63 +69,85 @@ export default class EventBus {
       fun = null;
     }
 
-    const {events} = this;
+    const {events, elementHash} = this;
     const eventType = events[type];
+    const eleHash = elementHash[type];
     let deleteEvents = [];
-    if (!fun && !element) {
-      events[type] = [];
-      deleteEvents = eventType;
-    } else if (fun && !element) {
-      const index = eventType.findIndex(event => event.function === fun);
-      if (index !== -1) {
-        deleteEvents = eventType.splice(index, 1);
-      }
-    } else if (!fun && element) {
-      const index = eventType.findIndex(event => event.element === element);
-      if (index !== -1) {
-        deleteEvents = eventType.splice(index, 1);
-      }
-    } else {
-      const index = eventType.findIndex(event => {
-        return event.function === fun && event.element === element;
-      });
-      if (index !== -1) {
-        deleteEvents = eventType.splice(index, 1);
-      }
+    // 解除绑定事件并移除事件与元素之间的映射
+    switch (true) {
+      case (!fun && !element):
+        deleteEvents = eventType;
+        events[type] = [];
+        elementHash[type] = [];
+        break;
+
+      case (fun && !element):
+        deleteEvents = Utils.remove(eventType, event => event.callback === fun);
+        if (deleteEvents.length !== 0) {
+          const eventEle = deleteEvents[0].element;
+          if (eventEle) {
+            const has = eventType.some(event => (event.element && event.element === eventEle));
+            if (!has) {
+              Utils.remove(eleHash, ele => ele === eventEle);
+            }
+          }
+        }
+        break;
+
+      case (!fun && element):
+        deleteEvents = Utils.remove(eventType, event => event.element === element);
+        Utils.remove(eleHash, ele => ele === element);
+        break;
+
+      default:
+        deleteEvents = Utils.remove(eventType, event => event.callback === fun && event.element === element);
+        const has = eventType.some(event => event.element === element);
+        if (!has) {
+          Utils.remove(eleHash, ele => ele === element);
+        }
+        break;
     }
 
     return deleteEvents;
   }
 
   trigger(type, element, ...data) {
-    const { events } = this;
+    const {events} = this;
     if (typeof type !== 'string') {
       throw '触发事件类型必须为string类型';
     }
     let runEvents = events[type];
-    const isElement = element instanceof Element || (Array.isArray(element) && element.every(ele => ele instanceof Element));
+    const isElement =
+      element instanceof Element || element instanceof HTMLElement ||
+      (Array.isArray(element) && element.every(ele => (ele instanceof Element || ele instanceof HTMLElement)));
     if (!isElement) {
       data.unshift(element);
       element = null;
     }
     if (element) {
-      runEvents = runEvents.filter(event => this._passCondition(element, event.element));
+      runEvents = runEvents.filter(event => {
+        // if (event.element) {
+          
+        // }
+        // return true;
+        return this._passCondition(element, event.element);
+      });
     }
     runEvents &&
       runEvents.forEach(event => {
-        event.function(...data);
+        event.callback(...data);
       });
   }
 
-  addEventListener (...arg) {
+  addEventListener(...arg) {
     this.on(...arg);
   }
 
-  removeEventListener (...arg) {
+  removeEventListener(...arg) {
     this.off(...arg);
   }
 
-  emit (...arg) {
+  emit(...arg) {
     this.trigger(...arg);
   }
 }

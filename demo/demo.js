@@ -29,4 +29,4 @@ const line2 = canvas.addShape('line', {
 
 canvas.draw();
 line.on('click', (e) => { console.log(e); });
-canvas.emit('click', line2, 'test');
+canvas.emit('click', [line, line2], 'test');

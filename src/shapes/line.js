@@ -1,6 +1,12 @@
+import Inside from './utils/inside';
 export default class Line {
   constructor (cfg) {
     this.attrs = Object.assign({}, cfg);
+  }
+
+  includes (x, y) {
+    const { x1, y1, x2, y2, lineWidth } = this.attrs;
+    return Inside.line(x1, y1, x2, y2, lineWidth, x ,y);
   }
   
   draw (ctx) {
