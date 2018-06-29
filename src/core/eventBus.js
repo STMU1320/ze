@@ -4,7 +4,7 @@ import Utils from '../utils';
 export default class EventBus {
   constructor() {
     this.events = {};
-    this.elementHash = {};
+    this.registeredElements = {};
   }
 
   _createEvent(type, fun, element) {
@@ -29,7 +29,7 @@ export default class EventBus {
       throw '事件类型必须为字符串，处理函数必须为Function类型';
     }
 
-    const {events, elementHash} = this;
+    const {events, registeredElements} = this;
     const event = this._createEvent(type, fun, element);
 
     // 添加事件
@@ -50,11 +50,11 @@ export default class EventBus {
     }
 
     // 添加事件与元素的映射
-    if (Utils.isEmpty(elementHash[type])) {
-      elementHash[type] = [];
+    if (Utils.isEmpty(registeredElements[type])) {
+      registeredElements[type] = [];
     }
-    if (element && !elementHash[type].includes(element)) {
-      elementHash[type].push(element);
+    if (element && !registeredElements[type].includes(element)) {
+      registeredElements[type].push(element);
     }
 
     return events[type].length;
@@ -69,16 +69,16 @@ export default class EventBus {
       fun = null;
     }
 
-    const {events, elementHash} = this;
+    const {events, registeredElements} = this;
     const eventType = events[type];
-    const eleHash = elementHash[type];
+    const eleHash = registeredElements[type];
     let deleteEvents = [];
     // 解除绑定事件并移除事件与元素之间的映射
     switch (true) {
       case (!fun && !element):
         deleteEvents = eventType;
         events[type] = [];
-        elementHash[type] = [];
+        registeredElements[type] = [];
         break;
 
       case (fun && !element):
@@ -135,7 +135,10 @@ export default class EventBus {
     }
     runEvents &&
       runEvents.forEach(event => {
-        event.callback(...data);
+        if ( data[0] instanceof UIEvent && event.element ) {
+          data[0].shape =  event.element;
+        }
+        event.callback.apply(event.element || this, data);
       });
   }
 

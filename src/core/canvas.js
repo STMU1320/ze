@@ -56,7 +56,7 @@ export default class Canvas extends EventBus {
   _eventHandle (e) {
     const { x, y } = this.getPointInCanvas(e.clientX, e.clientY);
     const eventType = e.type;
-    const subscribers = this.elementHash[eventType];
+    const subscribers = this.registeredElements[eventType];
     let triggerElements = [];
     subscribers.forEach(element => {
       if (element.includes(x, y)) {

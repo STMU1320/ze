@@ -1,10 +1,47 @@
 // 暂时把所有图形的事件都挂在canvas实列下，注册事件的图形过多后可能会对性能有影响.
 // import EventBus from './eventBus';
 
+const CANVAS_ATTRS = [
+  'fillStyle',
+  'font',
+  'globalAlpha',
+  'lineCap',
+  'lineWidth',
+  'lineJoin',
+  'miterLimit',
+  'shadowBlur',
+  'shadowColor',
+  'shadowOffsetX',
+  'shadowOffsetY',
+  'strokeStyle',
+  'textAlign',
+  'textBaseline',
+  'lineDash',
+  'lineDashOffset'
+];
+
 export default class Element {
-  constructor (container, type) {
+
+  static ATTRS = {
+    fillStyle: 'black',
+    strokeStyle: 'black'
+  }
+
+  constructor (container, type, attrs = {}) {
     this.container = container;
     this.type = type;
+    this.computed = {};
+    const canvasAttrs = {};
+    Object.keys(attrs).forEach((key) => {
+      if (CANVAS_ATTRS.includes(key)) {
+        canvasAttrs[key] = attrs[key];
+      }
+    });
+    this.canvasAttrs = Object.assign({}, Element.ATTRS, canvasAttrs);
+  }
+
+  set (key, value) {
+    this[key] = value;
   }
 
   getContext () {
