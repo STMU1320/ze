@@ -27,17 +27,20 @@ export default class Element {
     strokeStyle: 'black'
   }
 
-  constructor (container, type, attrs = {}) {
+  constructor (container, type, cfg) {
     this.container = container;
     this.type = type;
     this.computed = {};
     const canvasAttrs = {};
-    Object.keys(attrs).forEach((key) => {
-      if (CANVAS_ATTRS.includes(key)) {
-        canvasAttrs[key] = attrs[key];
-      }
-    });
+    if (cfg.attrs) {
+      Object.keys(cfg.attrs).forEach((key) => {
+        if (CANVAS_ATTRS.includes(key)) {
+          canvasAttrs[key] = cfg.attrs[key];
+        }
+      });
+    }
     this.canvasAttrs = Object.assign({}, Element.ATTRS, canvasAttrs);
+    this.zIndex = cfg.zIndex || 0;
   }
 
   set (key, value) {

@@ -8,6 +8,9 @@ module.exports = {
     libraryTarget: 'umd',
     path: resolve(__dirname, '../dist/')
   },
+  resolve: {
+    modules: ['node_modules', 'src']
+  },
   module: {
     rules: [
       {

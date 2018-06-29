@@ -24,6 +24,5 @@ export default class Line {
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
-    ctx.closePath();    
   }
 }

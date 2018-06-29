@@ -5,6 +5,7 @@ export { default as remove } from 'lodash/remove';
 export { default as each } from 'lodash/forEach';
 export { default as clone } from 'lodash/clone';
 export { default as isNil } from 'lodash/isNil';
+export { default as findLastIndex } from 'lodash/findLastIndex';
 
 export function upperFirst (string) {
   if (isEmpty(string)) {

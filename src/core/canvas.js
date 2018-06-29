@@ -1,8 +1,12 @@
 import EventBus from './eventBus';
 import Layer from './layer';
+import Utils from 'utils';
 
 export default class Canvas extends EventBus {
-
+  static ATTRS = {
+    width: 300,
+    height: 300
+  }
   constructor (ele, cfg) {
     super();
     if (!ele) {
@@ -11,10 +15,7 @@ export default class Canvas extends EventBus {
       cfg = ele;
       ele = document.body;
     }
-    this.attrs = Object.assign({
-      width: 300,
-      height: 300
-    }, cfg);
+    this.attrs = Object.assign({}, Canvas.ATTRS, cfg);
     this._getCanvas(ele);
     this._init(this.attrs);
   }
@@ -42,7 +43,7 @@ export default class Canvas extends EventBus {
     this.canvas.width = cfg.width;
     this.canvas.height = cfg.height;
     this.context = this.canvas.getContext('2d');
-    const background = new Layer(this);
+    const background = new Layer(this, { zIndex: -1 });
     this.background = background;
     this.layers = [background];
     this._eventHandle = this._eventHandle.bind(this);
@@ -96,7 +97,16 @@ export default class Canvas extends EventBus {
 
   addLayer (options) {
     const newLayer = new Layer(this, options);
-    this.layers.push(newLayer);
+    let zIndex = 0;
+    if (options && options.zIndex) {
+      zIndex = options.zIndex;
+    }
+    const insertIndex = Utils.findLastIndex(this.layers, (layer) => layer.zIndex <= zIndex);
+    if (insertIndex === -1) {
+      this.layers.unshift(newLayer);
+    } else {
+      this.layers.splice(insertIndex + 1, 0, newLayer);
+    }
     return newLayer;
   }
 

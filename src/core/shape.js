@@ -11,8 +11,11 @@ export default class Shape extends Element {
   }
 
   constructor (type, cfg, container) {
-    super(container, 'Shape', cfg.attrs);
+    super(container, 'Shape', cfg);
     const { attrs, ...drawControl } = cfg;
+    if (!Shapes[type]) {
+      throw `目前还不支持${type}类型的图形`;
+    }
     this.shape = new Shapes[type](attrs);
     if (type === 'Line') {
       drawControl.hasFill = false;

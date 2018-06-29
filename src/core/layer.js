@@ -11,9 +11,8 @@ export default class Layer extends Element {
   }
 
   constructor (container, cfg = {}) {
-    super(container, 'Layer', cfg.attrs);
+    super(container, 'Layer', cfg);
     this.attrs = Object.assign({}, Layer.ATTRS ,cfg.attrs);
-
     // offset 图层相对于canvas坐标原点的偏移量
     let offsetX = this.attrs.x,
         offsetY = this.attrs.y;
@@ -23,6 +22,15 @@ export default class Layer extends Element {
     }
     this.computed = Object.assign(this.computed, { offsetX, offsetY });
     this.shapes = [];
+  }
+
+  _insertElement (ele, zIndex = 0) {
+    const index = Utils.findLastIndex(this.shapes, (shape) => shape.zIndex <= zIndex);
+    if (index === -1 ) {
+      this.shapes.unshift(ele);
+    } else {
+      this.shapes.splice(index + 1, 0, ele);
+    }
   }
 
   includes (clientX, clientY) {
@@ -40,13 +48,13 @@ export default class Layer extends Element {
   addShape (type, options = {}) {
     const shapeType = Utils.upperFirst(type);
     const shape = new Shape(shapeType, options, this);
-    this.shapes.push(shape);
+    this._insertElement(shape, options.zIndex);
     return shape;
   }
 
-  addLayer (options) {
+  addLayer (options = {}) {
     const newLayer = new Layer(this, options);
-    this.shapes.push(newLayer);
+    this._insertElement(newLayer, options.zIndex);
     return newLayer; 
   }
 
