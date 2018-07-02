@@ -43,7 +43,7 @@ export default class Canvas extends EventBus {
     this.canvas.width = cfg.width;
     this.canvas.height = cfg.height;
     this.context = this.canvas.getContext('2d');
-    const background = new Layer(this, { zIndex: -1 });
+    const background = new Layer({ zIndex: -1 }, this);
     this.background = background;
     this.layers = [background];
     this._eventHandle = this._eventHandle.bind(this);
@@ -96,7 +96,7 @@ export default class Canvas extends EventBus {
   }
 
   addLayer (options) {
-    const newLayer = new Layer(this, options);
+    const newLayer = new Layer(options, this);
     let zIndex = 0;
     if (options && options.zIndex) {
       zIndex = options.zIndex;

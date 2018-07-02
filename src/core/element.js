@@ -1,7 +1,8 @@
 // 暂时把所有图形的事件都挂在canvas实列下，注册事件的图形过多后可能会对性能有影响.
 // import EventBus from './eventBus';
+import Animate from './animate';
 
-const CANVAS_ATTRS = [
+const DRAW_ATTRS = [
   'fillStyle',
   'font',
   'globalAlpha',
@@ -20,7 +21,7 @@ const CANVAS_ATTRS = [
   'lineDashOffset'
 ];
 
-export default class Element {
+export default class Element extends Animate {
 
   static ATTRS = {
     fillStyle: 'black',
@@ -28,18 +29,20 @@ export default class Element {
   }
 
   constructor (container, type, cfg) {
+    super(cfg.animate);
     this.container = container;
     this.type = type;
     this.computed = {};
-    const canvasAttrs = {};
+    this.canvas = null;
+    const drawAttrs = {};
     if (cfg.attrs) {
       Object.keys(cfg.attrs).forEach((key) => {
-        if (CANVAS_ATTRS.includes(key)) {
-          canvasAttrs[key] = cfg.attrs[key];
+        if (DRAW_ATTRS.includes(key)) {
+          drawAttrs[key] = cfg.attrs[key];
         }
       });
     }
-    this.canvasAttrs = Object.assign({}, Element.ATTRS, canvasAttrs);
+    this.drawAttrs = Object.assign({}, Element.ATTRS, drawAttrs);
     this.zIndex = cfg.zIndex || 0;
   }
 
@@ -56,7 +59,10 @@ export default class Element {
   }
 
   _getCanvasInstance () {
-    return this.container._getCanvasInstance();
+    if (!this.canvas) {
+      this.canvas = this.container._getCanvasInstance();
+    }
+    return this.canvas;
   }
 
   includes () {

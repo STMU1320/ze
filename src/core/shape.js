@@ -10,7 +10,7 @@ export default class Shape extends Element {
     opacity: 1
   }
 
-  constructor (type, cfg, container) {
+  constructor (type, cfg = {}, container) {
     super(container, 'Shape', cfg);
     const { attrs, ...drawControl } = cfg;
     if (!Shapes[type]) {
@@ -36,8 +36,8 @@ export default class Shape extends Element {
     const ga = context.globalAlpha;
     context.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
     context.save();
-    Object.keys(this.canvasAttrs).forEach(attr => {
-      ctx[attr] = this.canvasAttrs[attr];
+    Object.keys(this.drawAttrs).forEach(attr => {
+      ctx[attr] = this.drawAttrs[attr];
     });
     this.shape.draw(ctx);
     if (hasStroke) {

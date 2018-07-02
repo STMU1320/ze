@@ -10,7 +10,7 @@ export default class Layer extends Element {
     opacity: 1
   }
 
-  constructor (container, cfg = {}) {
+  constructor (cfg = {}, container) {
     super(container, 'Layer', cfg);
     this.attrs = Object.assign({}, Layer.ATTRS ,cfg.attrs);
     // offset 图层相对于canvas坐标原点的偏移量
@@ -53,7 +53,7 @@ export default class Layer extends Element {
   }
 
   addLayer (options = {}) {
-    const newLayer = new Layer(this, options);
+    const newLayer = new Layer(options, this);
     this._insertElement(newLayer, options.zIndex);
     return newLayer; 
   }
@@ -66,8 +66,8 @@ export default class Layer extends Element {
     context.globalAlpha = Utils.clamp(ga * opacity, 0, 1);
     context.translate(x, y);
     context.save();
-    Object.keys(this.canvasAttrs).forEach(attr => {
-      ctx[attr] = this.canvasAttrs[attr];
+    Object.keys(this.drawAttrs).forEach(attr => {
+      ctx[attr] = this.drawAttrs[attr];
     });
     shapes.forEach(shape => {
       shape.draw(context);
