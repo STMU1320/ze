@@ -66,15 +66,14 @@ layer2.addShape('rect', {
   zIndex: 3
 });
 
-layer2.addShape('rect', {
+layer2.addShape('circle', {
   attrs: {
-    x: 20,
-    y: 30,
-    w: 100,
-    h: 60,
+    x: 100,
+    y: 100,
+    r: 100,
     fillStyle: 'yellow'
   },
-  zIndex: 9
+  zIndex: -1
 });
 
 canvas.draw();

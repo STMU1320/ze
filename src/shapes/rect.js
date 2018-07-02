@@ -6,7 +6,7 @@ export default class Rect {
     y: 0,
     w: 10,
     h: 10,
-    cw: true
+    cw: false
   }
 
   constructor (cfg) {
@@ -22,7 +22,7 @@ export default class Rect {
     const { x, y, w, h, cw } = this.attrs;
     ctx.beginPath();
     ctx.moveTo(x, y);
-    if (cw) {
+    if (!cw) {
       ctx.lineTo(x + w, y);
       ctx.lineTo(x + w, y + h);
       ctx.lineTo(x, y + h);
