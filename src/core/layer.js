@@ -13,15 +13,9 @@ export default class Layer extends Element {
   constructor (cfg = {}, container) {
     super(container, 'Layer', cfg);
     this.attrs = Object.assign({}, Layer.ATTRS ,cfg.attrs);
-    // offset 图层相对于canvas坐标原点的偏移量
-    let offsetX = this.attrs.x,
-        offsetY = this.attrs.y;
-    if (container instanceof Layer) {
-      offsetX = container.computed.offsetX + this.attrs.x;
-      offsetY = container.computed.offsetY + this.attrs.y;
-    }
-    this.computed = Object.assign(this.computed, { offsetX, offsetY });
     this.shapes = [];
+    // offset 图层相对于canvas坐标原点的偏移量
+    this._setOffset();
   }
 
   _insertElement (ele, zIndex = 0) {
@@ -31,6 +25,22 @@ export default class Layer extends Element {
     } else {
       this.shapes.splice(index + 1, 0, ele);
     }
+  }
+
+  _setOffset () {
+    const { attrs, container } = this;
+    let offsetX = attrs.x,
+        offsetY = attrs.y;
+    if (container instanceof Layer) {
+      offsetX = container.computed.offsetX + attrs.x;
+      offsetY = container.computed.offsetY + attrs.y;
+    }
+    Object.assign(this.computed, { offsetX, offsetY });
+  }
+
+  setShapeAttrs (attrs) {
+    Object.assign(this.attrs, attrs);
+    this._setOffset();
   }
 
   includes (clientX, clientY) {

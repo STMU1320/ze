@@ -37,7 +37,7 @@ const layer = canvas.addLayer({
  }
 });
 
-layer.animate({ x: 200 }, 1000);
+layer.animate({ x: 200 }, 2000, 'easeOutQuart');
 
 const rect = layer.addShape('rect', {
   attrs: {

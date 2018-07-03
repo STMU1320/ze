@@ -1,6 +1,6 @@
 // 暂时把所有图形的事件都挂在canvas实列下，注册事件的图形过多后可能会对性能有影响.
 // import EventBus from './eventBus';
-// import Animate from './animate';
+import animate from './animate';
 
 const DRAW_ATTRS = [
   'fillStyle',
@@ -55,32 +55,27 @@ export default class Element {
   //   this[key] = value;
   // }
 
-  animate (attrs, duration, cb, delay = 0) {
-    if ( typeof cb === 'number' ) {
-      delay = cb;
-      cb = null;
-    }
-    const initAttrs = this.getShapeAttrs();
-    const from = {};
-    const diff = {};
-    Object.keys(attrs).forEach(key => {
-      const temp = attrs[key] - initAttrs[key];
-      from[key] = initAttrs[key];
-      diff[key] = temp;
-    });
-    this.animateCfg = { startTime: Date.now() + delay, duration, status: 'ready', to: attrs, from, diff };
-    this.timer = requestAnimationFrame(this._playAnimation);
-    cb && cb();
+  _setComputed (data) {
+    Object.assign(this.computed, data);
   }
 
+  _getCanvasInstance () {
+    if (!this.canvas) {
+      this.canvas = this.container._getCanvasInstance();
+    }
+    return this.canvas;
+  }
+
+  
   _playAnimation = () => {
-    let { startTime, duration, to, diff, from  } = this.animateCfg;
+    let { startTime, duration, to, diff, from, effect  } = this.animateCfg;
     const canvas = this._getCanvasInstance();
     const now = Date.now();
     const passTime = now - startTime;
     if (passTime > 0) {
       if (passTime < duration) {
-        const ratio = passTime / duration;
+        const baseRatio = passTime / duration;
+        const ratio = animate[effect](baseRatio);
         const nextAttrs = {};
         Object.keys(from).forEach(key => {
           nextAttrs[key] = from[key] + diff[key] * ratio;
@@ -91,6 +86,7 @@ export default class Element {
         this.setShapeAttrs(to);
         Object.assign(this.animateCfg, { status: 'stop' });
       }
+      
       canvas.draw();
     }
 
@@ -100,6 +96,29 @@ export default class Element {
       cancelAnimationFrame(this.timer);
       this.timer = null;
     }
+  }
+
+  animate (attrs, duration, effect = 'linear', cb, delay = 0) {
+    if ( typeof effect === 'function' ) {
+      delay = cb;
+      cb = effect;
+      effect = 'linear';
+    } else if (typeof effect === 'number') {
+      delay = effect;
+      cb = null;
+      effect = 'linear';
+    }
+    const initAttrs = this.getShapeAttrs();
+    const from = {};
+    const diff = {};
+    Object.keys(attrs).forEach(key => {
+      const temp = attrs[key] - initAttrs[key];
+      from[key] = initAttrs[key];
+      diff[key] = temp;
+    });
+    this.animateCfg = { startTime: Date.now() + delay, duration, effect, status: 'ready', to: attrs, from, diff };
+    this.timer = requestAnimationFrame(this._playAnimation);
+    cb && cb();
   }
 
   getShapeAttrs () {
@@ -116,13 +135,6 @@ export default class Element {
 
   getCanvas () {
     return this.container.getCanvas();
-  }
-
-  _getCanvasInstance () {
-    if (!this.canvas) {
-      this.canvas = this.container._getCanvasInstance();
-    }
-    return this.canvas;
   }
 
   includes () {
