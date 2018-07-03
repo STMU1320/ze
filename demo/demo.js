@@ -37,16 +37,20 @@ const layer = canvas.addLayer({
  }
 });
 
-// layer.addShape('rect', {
-//   attrs: {
-//     x: 0,
-//     y: 10,
-//     w: 50,
-//     h: 60,
-//     fillStyle: 'blue'
-//   },
-//   zIndex: 2
-// });
+layer.animate({ x: 200 }, 1000);
+
+const rect = layer.addShape('rect', {
+  attrs: {
+    x: 0,
+    y: 10,
+    w: 50,
+    h: 60,
+    fillStyle: 'blue'
+  },
+  zIndex: 2
+});
+
+rect.animate({ w: 200, h: 300 }, 1000, 1000);
 
 layer.addShape('text', {
   attrs: {

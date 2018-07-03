@@ -112,9 +112,15 @@ export default class Canvas extends EventBus {
     return newLayer;
   }
 
+  clear () {
+    const { width, height } = this.attrs;
+    this.context.clearRect(0, 0, width, height);
+  }
+
   draw () {
     const ctx = this.context;
     const layers = this.layers;
+    this.clear();
     layers.forEach(layer => {
       layer.draw(ctx);
     });

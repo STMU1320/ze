@@ -25,6 +25,14 @@ export default class Shape extends Element {
     this.type = type;
   }
 
+  getShapeAttrs () {
+    return this.shape.attrs;
+  }
+
+  setShapeAttrs (attrs) {
+    Object.assign(this.shape.attrs, attrs);
+  }
+
   includes (x, y) {
     const { computed } = this.container;
     return this.shape.includes(x - computed.offsetX, y - computed.offsetY);

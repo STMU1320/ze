@@ -9,13 +9,14 @@ export default class Animate {
     this.timer = null;
   }
 
-  animate () {
+  // animate (attrs, duration) {
+  //   let step = 0;
+  //   Object.keys(attrs).forEach(key => {});
+  // }
 
-  }
+  // stop () {
 
-  stop () {
-
-  }
+  // }
 
 
 }
