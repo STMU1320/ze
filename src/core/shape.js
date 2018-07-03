@@ -16,7 +16,7 @@ export default class Shape extends Element {
     if (!Shapes[type]) {
       throw `目前还不支持${type}类型的图形`;
     }
-    this.shape = new Shapes[type](attrs);
+    this.shape = new Shapes[type](attrs, this);
     if (type === 'Line') {
       drawControl.hasFill = false;
       drawControl.hasStroke = true;
@@ -39,12 +39,15 @@ export default class Shape extends Element {
     Object.keys(this.drawAttrs).forEach(attr => {
       ctx[attr] = this.drawAttrs[attr];
     });
-    this.shape.draw(ctx);
-    if (hasStroke) {
-      context.stroke();
-    }
-    if (hasFill) {
-      context.fill();
+    this.shape.draw(ctx, { hasStroke, hasFill });
+    // text 的描边和填充直接在draw方法完成
+    if (this.type !== 'Text') {
+      if (hasStroke) {
+        context.stroke();
+      }
+      if (hasFill) {
+        context.fill();
+      }
     }
     context.globalAlpha = ga;
     context.restore();

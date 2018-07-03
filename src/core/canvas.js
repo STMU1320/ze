@@ -43,6 +43,8 @@ export default class Canvas extends EventBus {
     this.canvas.width = cfg.width;
     this.canvas.height = cfg.height;
     this.context = this.canvas.getContext('2d');
+    // this.context.font = 'oblique small-caps bold 50px Arial';
+    // console.log(this.context.font);
     const background = new Layer({ zIndex: -1 }, this);
     this.background = background;
     this.layers = [background];
