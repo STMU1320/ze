@@ -5,15 +5,15 @@ const effects = {
 		return t;
 	},
 
-	easeInQuad: function(t) {
+	easeIn: function(t) {
 		return t * t;
 	},
 
-	easeOutQuad: function(t) {
+	easeOut: function(t) {
 		return -t * (t - 2);
 	},
 
-	easeInOutQuad: function(t) {
+	easeInOut: function(t) {
 		if ((t /= 0.5) < 1) {
 			return 0.5 * t * t;
 		}

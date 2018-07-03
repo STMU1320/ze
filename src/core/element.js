@@ -98,7 +98,7 @@ export default class Element {
     }
   }
 
-  animate (attrs, duration, effect = 'linear', cb, delay = 0) {
+  animate (attrs, duration, effect, cb, delay = 0) {
     if ( typeof effect === 'function' ) {
       delay = cb;
       cb = effect;
@@ -106,6 +106,13 @@ export default class Element {
     } else if (typeof effect === 'number') {
       delay = effect;
       cb = null;
+      effect = 'linear';
+    }
+    if (typeof cb === 'number') {
+      delay = cb;
+      cb = null;
+    }
+    if (!animate[effect]) {
       effect = 'linear';
     }
     const initAttrs = this.getShapeAttrs();

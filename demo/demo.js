@@ -37,7 +37,7 @@ const layer = canvas.addLayer({
  }
 });
 
-layer.animate({ x: 200 }, 2000, 'easeOutQuart');
+layer.animate({ x: 200 }, 2000);
 
 const rect = layer.addShape('rect', {
   attrs: {
@@ -50,7 +50,7 @@ const rect = layer.addShape('rect', {
   zIndex: 2
 });
 
-rect.animate({ w: 200, h: 300 }, 1000, 1000);
+rect.animate({ w: 200, h: 300 }, 1000, 'easeIn', 1000);
 
 layer.addShape('text', {
   attrs: {
