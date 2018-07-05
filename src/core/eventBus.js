@@ -7,11 +7,12 @@ export default class EventBus {
     this.registeredElements = {};
   }
 
-  _createEvent(type, fun, element) {
+  _createEvent(type, fun, element, once) {
     return {
       type,
       callback: fun,
       element,
+      once
     };
   }
 
@@ -22,7 +23,7 @@ export default class EventBus {
     return condition === target;
   }
 
-  on(type, fun, element) {
+  on(type, fun, element, once = false) {
     if (!fun || !type) {
       throw '添加事件函数必须接收事件类型和事件处理函数两个参数';
     } else if (typeof fun !== 'function' || typeof type !== 'string') {
@@ -30,7 +31,7 @@ export default class EventBus {
     }
 
     const {events, registeredElements} = this;
-    const event = this._createEvent(type, fun, element);
+    const event = this._createEvent(type, fun, element, once);
 
     // 添加事件
     if (type in events) {
@@ -117,6 +118,7 @@ export default class EventBus {
       throw '触发事件类型必须为string类型';
     }
     let runEvents = events[type];
+    const onceEvents = [];
     const isElement =
       element instanceof Element || element instanceof HTMLElement ||
       (Array.isArray(element) && element.every(ele => (ele instanceof Element || ele instanceof HTMLElement)));
@@ -139,7 +141,18 @@ export default class EventBus {
           data[0].shape =  event.element;
         }
         event.callback.apply(event.element || this, data);
+        if (event.once) {
+          onceEvents.push(event);
+        }
       });
+    if (onceEvents.length > 0) {
+      Utils.remove(runEvents, event => onceEvents.includes(event));
+    }
+  }
+
+  once (...arg) {
+    arg[3] = true;
+    this.on(...arg);
   }
 
   addEventListener(...arg) {

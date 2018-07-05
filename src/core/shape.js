@@ -25,12 +25,35 @@ export default class Shape extends Element {
     this.type = type;
   }
 
+  _draw (ctx) {
+    const { hasStroke, hasFill, opacity } = this.attrs;
+    const ga = ctx.globalAlpha;
+    ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+    ctx.save();
+    Object.keys(this.drawStyle).forEach(attr => {
+      ctx[attr] = this.drawStyle[attr];
+    });
+    this.shape.draw(ctx, { hasStroke, hasFill });
+    // text 的描边和填充直接在draw方法完成
+    if (this.type !== 'Text') {
+      if (hasStroke) {
+        ctx.stroke();
+      }
+      if (hasFill) {
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = ga;
+    ctx.restore();
+  }
+
   getShapeAttrs () {
     return this.shape.attrs;
   }
 
   setShapeAttrs (attrs) {
     Object.assign(this.shape.attrs, attrs);
+    super.setShapeAttrs();
   }
 
   includes (x, y) {
@@ -38,26 +61,4 @@ export default class Shape extends Element {
     return this.shape.includes(x - computed.offsetX, y - computed.offsetY);
   }
 
-  draw (ctx) {
-    const context = ctx || this.getContext();
-    const { hasStroke, hasFill, opacity } = this.attrs;
-    const ga = context.globalAlpha;
-    context.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
-    context.save();
-    Object.keys(this.drawAttrs).forEach(attr => {
-      ctx[attr] = this.drawAttrs[attr];
-    });
-    this.shape.draw(ctx, { hasStroke, hasFill });
-    // text 的描边和填充直接在draw方法完成
-    if (this.type !== 'Text') {
-      if (hasStroke) {
-        context.stroke();
-      }
-      if (hasFill) {
-        context.fill();
-      }
-    }
-    context.globalAlpha = ga;
-    context.restore();
-  }
 }

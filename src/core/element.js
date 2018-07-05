@@ -2,7 +2,7 @@
 // import EventBus from './eventBus';
 import animate from './animate';
 
-const DRAW_ATTRS = [
+const DRAW_STYLE_KEYS = [
   'fillStyle',
   'font',
   'globalAlpha',
@@ -23,9 +23,18 @@ const DRAW_ATTRS = [
 
 export default class Element {
 
-  static ATTRS = {
-    fillStyle: 'black',
-    strokeStyle: 'black'
+  static DRAW_STYLE_KEYS = DRAW_STYLE_KEYS;
+
+  static DEFAULT_ANIMATE_CFG = {
+    to: null,
+    from: null,
+    cb: null,
+    diff: null,
+    startTime: null,
+    delay: 0,
+    duration: 0,
+    status: 'stop',
+    effect: 'linear'
   }
 
   constructor (container, type, cfg) {
@@ -33,22 +42,23 @@ export default class Element {
     this.type = type;
     this.computed = {};
     this.canvas = null;
-    const drawAttrs = {};
+    const drawStyle = {};
     const shapeAttrs = {};
     if (cfg.attrs) {
       Object.keys(cfg.attrs).forEach((key) => {
-        if (DRAW_ATTRS.includes(key)) {
-          drawAttrs[key] = cfg.attrs[key];
+        if (DRAW_STYLE_KEYS.includes(key)) {
+          drawStyle[key] = cfg.attrs[key];
         } else {
           shapeAttrs[key] = cfg.attrs[key];
         }
       });
     }
-    this.drawAttrs = Object.assign({}, Element.ATTRS, drawAttrs);
-    this.animateCfg = Object.assign({}, cfg.animate);
+    this.drawStyle = Object.assign({}, drawStyle);
+    this.animateCfg = Object.assign({},  Element.DEFAULT_ANIMATE_CFG, cfg.animate);
     this.timer = null;
     this.shapeAttrs = shapeAttrs;
     this.zIndex = cfg.zIndex || 0;
+    this._status = { drawn: false, dirty: false };
   }
 
   // set (key, value) {
@@ -66,10 +76,17 @@ export default class Element {
     return this.canvas;
   }
 
+  _stopAnimation = (cb) => {
+    if (this.timer) {
+      cancelAnimationFrame(this.timer);
+      this.timer = null;
+    }
+    cb && cb(this);
+  }
+
   
   _playAnimation = () => {
-    let { startTime, duration, to, diff, from, effect  } = this.animateCfg;
-    const canvas = this._getCanvasInstance();
+    let { startTime, duration, to, diff, from, effect, cb  } = this.animateCfg;
     const now = Date.now();
     const passTime = now - startTime;
     if (passTime > 0) {
@@ -78,27 +95,55 @@ export default class Element {
         const ratio = animate[effect](baseRatio);
         const nextAttrs = {};
         Object.keys(from).forEach(key => {
-          nextAttrs[key] = from[key] + diff[key] * ratio;
+          nextAttrs[key] = ~~(from[key] + diff[key] * ratio + 0.5);
         });
         this.setShapeAttrs(nextAttrs);
         Object.assign(this.animateCfg, { status: 'playing' });
+        this.timer = requestAnimationFrame(this._playAnimation);
       } else {
         this.setShapeAttrs(to);
         Object.assign(this.animateCfg, { status: 'stop' });
+        this._stopAnimation(cb);
       }
-      
-      canvas.draw();
-    }
-
-    if (passTime < duration) {
-      this.timer = requestAnimationFrame(this._playAnimation);
-    } else {
-      cancelAnimationFrame(this.timer);
-      this.timer = null;
+      this.update();
     }
   }
 
-  animate (attrs, duration, effect, cb, delay = 0) {
+  _noticeParent (status) {
+    const parent = this.container;
+    if (parent.type === 'Layer') {
+      parent.setStatus(status);
+    }
+  }
+
+  getStatus () {
+    return { ...this._status };
+  }
+
+  setStatus (status) {
+    Object.assign(this._status, status);
+    if (status.dirty) {
+      this._noticeParent({dirty: true});
+    }
+  }
+
+  getShapeAttrs () {
+    return this.attrs;
+  }
+
+  setShapeAttrs () {
+    this.setStatus({dirty: true});
+  }
+
+  getContext () {
+    return this.container.getContext();
+  }
+
+  getCanvas () {
+    return this.container.getCanvas();
+  }
+
+  animate (attrs, duration, effect, cb, delay = 0, autoPlay = true) {
     if ( typeof effect === 'function' ) {
       delay = cb;
       cb = effect;
@@ -115,6 +160,10 @@ export default class Element {
     if (!animate[effect]) {
       effect = 'linear';
     }
+    const currentCfg = this.animateCfg;
+    if (currentCfg.status === 'playing') {
+      this._stopAnimation(currentCfg.cb);
+    }
     const initAttrs = this.getShapeAttrs();
     const from = {};
     const diff = {};
@@ -123,29 +172,37 @@ export default class Element {
       from[key] = initAttrs[key];
       diff[key] = temp;
     });
-    this.animateCfg = { startTime: Date.now() + delay, duration, effect, status: 'ready', to: attrs, from, diff };
-    this.timer = requestAnimationFrame(this._playAnimation);
-    cb && cb();
+    Object.assign(this.animateCfg, { duration, effect, status: 'ready', to: attrs, from, diff, cb, delay });
+    if (autoPlay) {
+      this.play();
+    }
   }
 
-  getShapeAttrs () {
-    return this.attrs;
+  play = () => {
+    const { status, delay } = this.animateCfg;
+    const canvas = this._getCanvasInstance();
+    const canvasStatus = canvas.getStatus();
+    if (canvasStatus.drawn){
+      if (status === 'ready') {
+        Object.assign(this.animateCfg, { startTime: Date.now() + delay });
+        this.timer = requestAnimationFrame(this._playAnimation);
+      }
+    } else {
+      canvas.once('@@play', this.play);
+    }
   }
 
-  setShapeAttrs (attrs) {
-    Object.assign(this.attrs, attrs);
-  }
-
-  getContext () {
-    return this.container.getContext();
-  }
-
-  getCanvas () {
-    return this.container.getCanvas();
+  stop () {
+    this._stopAnimation(this.animateCfg.cb);
   }
 
   includes () {
     return true;
+  }
+
+  update () {
+    const canvas = this._getCanvasInstance();
+    canvas.emit('@@update');
   }
 
   on (event, fun) {

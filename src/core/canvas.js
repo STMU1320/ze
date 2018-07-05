@@ -43,17 +43,32 @@ export default class Canvas extends EventBus {
     this.canvas.width = cfg.width;
     this.canvas.height = cfg.height;
     this.context = this.canvas.getContext('2d');
-    // this.context.font = 'oblique small-caps bold 50px Arial';
-    // console.log(this.context.font);
     const background = new Layer({ zIndex: -1 }, this);
     this.background = background;
     this.layers = [background];
-    this._eventHandle = this._eventHandle.bind(this);
+    this._status = { drawn: false };
     this._initEvent();
+    this._initDrawInfo();
   }
 
   _initEvent () {
     this.canvas.addEventListener('click', this._eventHandle, false);
+    this.on('@@update', this.update);
+  }
+
+  _initDrawInfo () {
+    this.drawInfo = {
+      drawTime: Date.now(),
+      fps: 0
+    };
+  }
+
+  _updateDrawInfo () {
+    const { drawTime } = this.drawInfo;
+    const now = Date.now();
+    const fps = ~~(1000 / (now - drawTime) + 0.5);
+    console.log(fps);
+    this.drawInfo = { fps, drawTime: now };
   }
 
   _eventHandle (e) {
@@ -69,8 +84,16 @@ export default class Canvas extends EventBus {
     this.emit(eventType, triggerElements, e);
   }
 
-  _getCanvasInstance () {
+  _getCanvasInstance = () => {
     return this;
+  }
+
+  getStatus () {
+    return { ...this._status };
+  }
+
+  setStatus (status) {
+    Object.assign(this._status, status);
   }
 
   getContext () {
@@ -117,13 +140,28 @@ export default class Canvas extends EventBus {
     this.context.clearRect(0, 0, width, height);
   }
 
+  update () {
+    const { drawTime } = this.drawInfo;
+    const now = Date.now();
+    if (now - drawTime > 10) {
+      this.draw();
+    }
+  }
+
   draw () {
     const ctx = this.context;
     const layers = this.layers;
+    const status = this.getStatus();
+    this._updateDrawInfo();
     this.clear();
     layers.forEach(layer => {
-      layer.draw(ctx);
+      layer._draw(ctx);
     });
+
+    if (!status.drawn) {
+      this.setStatus({ drawn: true });
+      this.emit('@@play');
+    }
   }
 }
 

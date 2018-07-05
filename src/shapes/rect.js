@@ -21,12 +21,10 @@ export default class Rect {
   draw (ctx) {
     const { x, y, w, h, cw } = this.attrs;
     ctx.beginPath();
-    ctx.moveTo(x, y);
     if (!cw) {
-      ctx.lineTo(x + w, y);
-      ctx.lineTo(x + w, y + h);
-      ctx.lineTo(x, y + h);
+      ctx.rect(x, y, w, h);
     } else {
+      ctx.moveTo(x, y);
       ctx.lineTo(x, y + h);
       ctx.lineTo(x + w, y + h);
       ctx.lineTo(x + w, y);
