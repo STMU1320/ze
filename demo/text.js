@@ -16,7 +16,7 @@ function callback (shape) {
   canvas.remove(shape);
 };
 
-function addShape (count = 1500) {
+function addShape (count = 500) {
   const { shapeLength } = canvas.computed;
   if (shapeLength < count) {
     for (let i = 0; i < count - shapeLength; i++) {
@@ -28,7 +28,6 @@ function addShape (count = 1500) {
         }
       });
       text.animate({ x: -50 }, getRandomNum(10000, 20000), callback, getRandomNum(20000));
-      text.on('click', (e) => { console.log(e.shape); });
     }
   }
 }

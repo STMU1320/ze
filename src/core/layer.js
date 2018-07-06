@@ -66,20 +66,18 @@ export default class Layer extends Element {
   }
 
   _draw (ctx) {
-    const { shapes, brush, palette, computed } = this;
-    const { offsetX, offsetY } = computed;
+    const { shapes, brush, palette, attrs } = this;
+    const { x, y } = attrs;
     const context = ctx;
     const status = this.getStatus();
     if (!status.drawn || status.dirty) {
       brush.clearRect(0, 0, palette.width, palette.height);
-      brush.translate(offsetX, offsetY);
       shapes.forEach(shape => {
         shape._draw(brush);
       });
     }
-    context.drawImage(palette, 0, 0, palette.width, palette.height);
-    this.setStatus({ drawn: true });
-    brush.translate(-offsetX, -offsetY);
+    context.drawImage(palette, x, y, palette.width, palette.height);
+    this.setStatus({ drawn: true, dirty: false });
   }
 
   getContext () {
@@ -119,6 +117,10 @@ export default class Layer extends Element {
     const newLayer = new Layer(options, this);
     this._insertElement(newLayer, options.zIndex);
     return newLayer; 
+  }
+
+  remove (...shapes) {
+    return Utils.remove(this.shapes, s => shapes.includes(s));
   }
 
 }

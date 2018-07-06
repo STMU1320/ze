@@ -16,6 +16,7 @@ export default class Canvas extends EventBus {
       ele = document.body;
     }
     this.attrs = Object.assign({}, Canvas.ATTRS, cfg);
+    this.computed = { shapeLength: 0, layerLength: 0 };
     this._getCanvas(ele);
     this._init(this.attrs);
   }
@@ -43,17 +44,24 @@ export default class Canvas extends EventBus {
     this.canvas.width = cfg.width;
     this.canvas.height = cfg.height;
     this.context = this.canvas.getContext('2d');
-    const background = new Layer({ zIndex: -1 }, this);
-    this.background = background;
-    this.layers = [background];
-    this._status = { drawn: false };
+    this._background = null;
+    this.layers = [];
+    this._status = { drawn: true };
     this._initEvent();
     this._initDrawInfo();
+  }
+
+  _initBackground () {
+    const background = new Layer({ zIndex: -1 }, this);
+    this._background = background;
+    this.layers.unshift(background);
+    this.emit('@@change', 'layer', 1);
   }
 
   _initEvent () {
     this.canvas.addEventListener('click', this._eventHandle, false);
     this.on('@@update', this.update);
+    this.on('@@change', this._contentChange);
   }
 
   _initDrawInfo () {
@@ -67,25 +75,39 @@ export default class Canvas extends EventBus {
     const { drawTime } = this.drawInfo;
     const now = Date.now();
     const fps = ~~(1000 / (now - drawTime) + 0.5);
-    console.log(fps);
-    this.drawInfo = { fps, drawTime: now };
+    this.drawInfo.fps = fps;
+    this.drawInfo.drawTime = now;
   }
 
-  _eventHandle (e) {
+  _eventHandle = (e) => {
     const { x, y } = this.getPointInCanvas(e.clientX, e.clientY);
     const eventType = e.type;
     const subscribers = this.registeredElements[eventType];
-    let triggerElements = [];
-    subscribers.forEach(element => {
-      if (element.includes(x, y)) {
-        triggerElements.push(element);
-      }
-    });
-    this.emit(eventType, triggerElements, e);
+    if (subscribers) {
+      let triggerElements = [];
+      subscribers.forEach(element => {
+        if (element.includes(x, y)) {
+          triggerElements.push(element);
+        }
+      });
+      this.emit(eventType, triggerElements, e);
+    }
   }
 
   _getCanvasInstance = () => {
     return this;
+  }
+  _setComputed (obj) {
+    Object.assign(this.computed, obj);
+  }
+
+  _contentChange (type, changeNum) {
+    const { shapeLength, layerLength } = this.computed;
+    if (type === 'layer') {
+      this._setComputed({ layerLength: layerLength + changeNum });
+    } else {
+      this._setComputed({ shapeLength: shapeLength + changeNum });
+    }
   }
 
   getStatus () {
@@ -117,7 +139,12 @@ export default class Canvas extends EventBus {
 
 
   addShape (type, options) {
-    return this.background.addShape(type, options);
+    if (!this._background) {
+      this._initBackground();
+    }
+    const shape = this._background.addShape(type, options);
+    this.emit('@@change', 'shape', 1);
+    return shape;
   }
 
   addLayer (options) {
@@ -132,7 +159,32 @@ export default class Canvas extends EventBus {
     } else {
       this.layers.splice(insertIndex + 1, 0, newLayer);
     }
+    this.emit('@@change', 'layer', 1);
     return newLayer;
+  }
+
+  remove (...shapes) {
+    const shape = [];
+    const layer = [];
+    let removed = [];
+    shapes.forEach(s => {
+      if (s.type === 'Layer') {
+        layer.push(s);
+      } else {
+        shape.push(s);
+      }
+    });
+    if (shape.length > 0) {
+      removed = this._background.remove(...shape);
+      this.emit('@@change', 'shape', -removed.length);
+    }
+    if (layer.length > 0) {
+      const rml = Utils.remove(this.layers, l => layer.includes(l));
+      removed = removed.concat(rml);
+      this.emit('@@change', 'layer', -rml.length);
+    }
+
+    return removed;
   }
 
   clear () {
@@ -140,10 +192,15 @@ export default class Canvas extends EventBus {
     this.context.clearRect(0, 0, width, height);
   }
 
-  update () {
+  update (auto) {
     const { drawTime } = this.drawInfo;
     const now = Date.now();
-    if (now - drawTime > 10) {
+    // 判断一下是动画自动的更新还是手动触发的更新
+    if (auto === 'auto') {
+      if (now - drawTime > 16) {
+        this.draw();
+      }
+    } else {
       this.draw();
     }
   }
