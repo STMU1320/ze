@@ -12,7 +12,6 @@ export default class Text {
   constructor (cfg) {
     this.attrs = Object.assign({}, Text.ATTRS ,cfg);
     this.computed = {};
-    this._private = {};
   }
 
   _getCtxFontSize (ctx) {

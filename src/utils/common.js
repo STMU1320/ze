@@ -43,3 +43,24 @@ export function clamp(a, min, max) {
 
   return a;
 }
+
+export function assign (target, ...source) {
+  if (source.length === 0) {
+    return target;
+  }
+  
+  for ( let i = 0; i < source.length; i++ ) {
+    const si = source[i];
+    if (si == null || typeof si !== 'object') {
+      break;
+    }
+    Object.keys(si).forEach(key => {
+      if (target[key] && typeof target[key] === 'object') {
+        assign(target[key], si[key]);
+      } else {
+        target[key] = si[key];
+      }
+    });
+  }
+  return target;
+}

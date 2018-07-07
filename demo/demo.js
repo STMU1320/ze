@@ -10,13 +10,17 @@ function getRandomNum (min, max) {
 
 const canvas = new ZE.Canvas('container', {
   width: 1000,
-  height: 800
+  height: 800,
+  style: {
+    fillStyle: '#fff',
+    font: '16px sans-serif'
+  }
 });
 function callback (shape) {
   canvas.remove(shape);
 };
 
-function addShape (count = 500) {
+function addShape (count = 1000) {
   const { shapeLength } = canvas.computed;
   if (shapeLength < count) {
     for (let i = 0; i < count - shapeLength; i++) {
@@ -28,19 +32,18 @@ function addShape (count = 500) {
         }
       });
       text.animate({ x: -50 }, getRandomNum(10000, 20000), callback, getRandomNum(20000));
-      text.on('click', (e) => { console.log(e.shape); });
     }
   }
 }
 
+
  const ctx = canvas.getContext();
  ctx.canvas.style.background = '#666';
- ctx.font = '16px Arial';
- ctx.fillStyle = '#fff';
 
  addShape();
 
  setInterval(addShape, 10000);
 
 canvas.draw();
+
 console.log(canvas);

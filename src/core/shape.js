@@ -11,31 +11,32 @@ export default class Shape extends Element {
   }
 
   constructor (type, cfg = {}, container) {
-    super(container, 'Shape', cfg);
-    const { attrs, ...drawControl } = cfg;
+    const defaultCfg = Utils.assign({},  { attrs: Shape.ATTRS }, cfg);
+    if (type === 'Line') {
+      defaultCfg.attrs.hasFill = false;
+      defaultCfg.attrs.hasStroke = true;
+    }
+    super(container, 'Shape', defaultCfg);
     if (!Shapes[type]) {
       throw `目前还不支持${type}类型的图形`;
     }
-    this.shape = new Shapes[type](attrs, this);
-    if (type === 'Line') {
-      drawControl.hasFill = false;
-      drawControl.hasStroke = true;
-    }
-    this.attrs = Object.assign({}, Shape.ATTRS, drawControl);
+    this.shape = new Shapes[type](defaultCfg.attrs);
+    this.attrs = this.shape.attrs;
     this.type = type;
   }
 
   _draw (ctx) {
-    const { hasStroke, hasFill, opacity } = this.attrs;
+    const { attrs, style, shape, type } = this;
+    const { hasStroke, hasFill, opacity } = attrs;
     const ga = ctx.globalAlpha;
     ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
     ctx.save();
-    Object.keys(this.drawStyle).forEach(attr => {
-      ctx[attr] = this.drawStyle[attr];
+    Object.keys(style).forEach(attr => {
+      ctx[attr] = style[attr];
     });
-    this.shape.draw(ctx, { hasStroke, hasFill });
+    shape.draw(ctx, { hasStroke, hasFill });
     // text 的描边和填充直接在draw方法完成
-    if (this.type !== 'Text') {
+    if (type !== 'Text') {
       if (hasStroke) {
         ctx.stroke();
       }
@@ -45,15 +46,6 @@ export default class Shape extends Element {
     }
     ctx.globalAlpha = ga;
     ctx.restore();
-  }
-
-  getShapeAttrs () {
-    return this.shape.attrs;
-  }
-
-  setShapeAttrs (attrs) {
-    Object.assign(this.shape.attrs, attrs);
-    super.setShapeAttrs();
   }
 
   includes (x, y) {

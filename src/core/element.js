@@ -2,7 +2,7 @@
 // import EventBus from './eventBus';
 import animate from './animate';
 
-const DRAW_STYLE_KEYS = [
+const STYLE_KEYS = [
   'fillStyle',
   'font',
   'globalAlpha',
@@ -22,7 +22,7 @@ const DRAW_STYLE_KEYS = [
 ];
 
 export default class Element {
-  static DRAW_STYLE_KEYS = DRAW_STYLE_KEYS;
+  static STYLE_KEYS = STYLE_KEYS;
 
   static DEFAULT_ANIMATE_CFG = {
     to: null,
@@ -37,46 +37,36 @@ export default class Element {
   };
 
   constructor(container, type, cfg) {
+    const { attrs, style, animate, zIndex } = cfg;
     this.container = container;
     this.type = type;
-    this.computed = {};
+    this.attrs = attrs;
     this.canvas = null;
-    const drawStyle = {};
-    const shapeAttrs = {};
-    if (cfg.attrs) {
-      Object.keys(cfg.attrs).forEach(key => {
-        if (DRAW_STYLE_KEYS.includes(key)) {
-          drawStyle[key] = cfg.attrs[key];
-        } else {
-          shapeAttrs[key] = cfg.attrs[key];
-        }
-      });
-    }
-    this.drawStyle = Object.assign({}, drawStyle);
-    this.animateCfg = Object.assign(
-      {},
-      Element.DEFAULT_ANIMATE_CFG,
-      cfg.animate
-    );
     this.timer = null;
-    this.shapeAttrs = shapeAttrs;
-    this.zIndex = cfg.zIndex || 0;
+    this.zIndex = zIndex || 0;
     this._status = {drawn: false, dirty: false};
+    this._initStyle(style);
+    this._initComputed();
+    this._initAnimate(animate);
+  }
+ 
+  _initStyle (style = {}) {
+    const parentStyle = this.container.style;
+    const _style = {};
+    Object.keys(style).forEach(key => {
+      if (STYLE_KEYS.includes(key)) {
+        _style[key] = style[key];
+      }
+    });
+    this.style = Object.assign({}, _style, parentStyle);
   }
 
-  // set (key, value) {
-  //   this[key] = value;
-  // }
-
-  _setComputed(data) {
-    Object.assign(this.computed, data);
+  _initAnimate (animate) {
+    this.animateCfg = Object.assign({}, Element.DEFAULT_ANIMATE_CFG, animate);
   }
 
-  _getCanvasInstance() {
-    if (!this.canvas) {
-      this.canvas = this.container._getCanvasInstance();
-    }
-    return this.canvas;
+  _initComputed() {
+    this.computed = {};
   }
 
   _stopAnimation = cb => {
@@ -93,60 +83,65 @@ export default class Element {
     const passTime = now - startTime;
     if (passTime < 0) {
       // 此处有待验证哪种方式的性能会好些
-      this.timer = requestAnimationFrame(this._playAnimation);
-      return this.timer;
-      // return setTimeout(this._playAnimation, -passTime);
-    }
-    if (passTime < duration) {
+      // this.timer = requestAnimationFrame(this._playAnimation);
+      // return this.timer;
+      return setTimeout(this._playAnimation, -passTime);
+    } else if (passTime < duration) {
       const baseRatio = passTime / duration;
       const ratio = animate[effect](baseRatio);
       const nextAttrs = {};
       Object.keys(from).forEach(key => {
         nextAttrs[key] = ~~(from[key] + diff[key] * ratio + 0.5);
       });
-      this.setShapeAttrs(nextAttrs);
-      Object.assign(this.animateCfg, {status: 'playing'});
+      this.setAttrs(nextAttrs);
+      this.animateCfg.status = 'playing';
       this.update('auto');
       this.timer = requestAnimationFrame(this._playAnimation);
     } else {
-      this.setShapeAttrs(to);
-      Object.assign(this.animateCfg, {status: 'stop'});
+      this.setAttrs(to);
+      this.animateCfg.status = 'stop';
       this._stopAnimation(cb);
     }
   };
 
-  _noticeParent(status) {
+  _noticeParentStatus(status) {
     const parent = this.container;
-    if (parent.type === 'Layer') {
-      parent.setStatus(status);
+    parent._set('_status',status);
+  }
+  _set (key, value) {
+    if (!this[key]) {
+      this[key] = value;
+    } else {
+      Object.assign(this[key], value);
     }
   }
 
-  getStatus() {
-    return {...this._status};
-  }
-
-  setStatus(status) {
-    Object.assign(this._status, status);
-    if (status.dirty) {
-      this._noticeParent({dirty: true});
-    }
-  }
-
-  getShapeAttrs() {
-    return this.attrs;
-  }
-
-  setShapeAttrs() {
+  setAttrs(attrs) {
+    this._set('attrs', attrs);
     this.setStatus({dirty: true});
   }
 
+  setStatus (status) {
+    this._set('_status', status);
+    if (status.dirty) {
+      this._noticeParentStatus({ dirty: true });
+    }
+  }
+
+  getStatus () {
+    return this._status;
+  }
+
+ 
   getContext() {
     return this.container.getContext();
   }
 
   getCanvas() {
-    return this.container.getCanvas();
+    if (!this.canvas) {
+      this.canvas = this.container.getCanvas();
+    }
+    return this.canvas;
   }
 
   animate(attrs, duration, effect, cb, delay = 0, autoPlay = true) {
@@ -170,7 +165,7 @@ export default class Element {
     if (currentCfg.status === 'playing') {
       this._stopAnimation(currentCfg.cb);
     }
-    const initAttrs = this.getShapeAttrs();
+    const initAttrs = this.attrs;
     const from = {};
     const diff = {};
     Object.keys(attrs).forEach(key => {
@@ -195,7 +190,7 @@ export default class Element {
 
   play = () => {
     const {status, delay} = this.animateCfg;
-    const canvas = this._getCanvasInstance();
+    const canvas = this.getCanvas();
     const canvasStatus = canvas.getStatus();
     if (canvasStatus.drawn) {
       if (status === 'ready') {
@@ -216,7 +211,7 @@ export default class Element {
   }
 
   update(auto) {
-    const canvas = this._getCanvasInstance();
+    const canvas = this.getCanvas();
     canvas.emit('@@update', auto);
     // const now = Date.now();
     // // 判断一下是动画自动的更新还是手动触发的更新
@@ -230,12 +225,12 @@ export default class Element {
   }
 
   on(event, fun) {
-    const canvasInstance = this._getCanvasInstance();
-    canvasInstance.on(event, fun, this);
+    const canvas = this.getCanvas();
+    canvas.on(event, fun, this);
   }
 
   off(type, fun) {
-    const canvasInstance = this._getCanvasInstance();
-    canvasInstance.off(type, fun, this);
+    const canvas = this.getCanvas();
+    canvas.off(type, fun, this);
   }
 }
