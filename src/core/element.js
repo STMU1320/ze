@@ -233,4 +233,9 @@ export default class Element {
     const canvasInstance = this._getCanvasInstance();
     canvasInstance.on(event, fun, this);
   }
+
+  off(type, fun) {
+    const canvasInstance = this._getCanvasInstance();
+    canvasInstance.off(type, fun, this);
+  }
 }

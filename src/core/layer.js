@@ -120,7 +120,13 @@ export default class Layer extends Element {
   }
 
   remove (...shapes) {
-    return Utils.remove(this.shapes, s => shapes.includes(s));
+    const rmShape = Utils.remove(this.shapes, s => shapes.includes(s));
+    if (rmShape.length) {
+      const canvas = this._getCanvasInstance();
+      // canvas.emit('@@update', 'auto');
+      canvas.emit('@@clear', { elements: rmShape });
+    }
+    return rmShape;
   }
 
 }

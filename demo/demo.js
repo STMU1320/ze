@@ -16,7 +16,7 @@ function callback (shape) {
   canvas.remove(shape);
 };
 
-function addShape (count = 1500) {
+function addShape (count = 500) {
   const { shapeLength } = canvas.computed;
   if (shapeLength < count) {
     for (let i = 0; i < count - shapeLength; i++) {
@@ -43,3 +43,4 @@ function addShape (count = 1500) {
  setInterval(addShape, 10000);
 
 canvas.draw();
+console.log(canvas);

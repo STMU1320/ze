@@ -7,6 +7,11 @@ export default class EventBus {
     this.registeredElements = {};
   }
 
+  _isElement (element) {
+    return element instanceof Element || element instanceof HTMLElement ||
+    (Array.isArray(element) && element.every(ele => (ele instanceof Element || ele instanceof HTMLElement)));
+  }
+
   _createEvent(type, fun, element, once) {
     return {
       type,
@@ -21,6 +26,24 @@ export default class EventBus {
       return condition.includes(target);
     }
     return condition === target;
+  }
+
+  _clearEvent (elements) {
+    const { registeredElements, events } = this;
+    if (!Array.isArray(elements)) {
+      elements = [elements];
+    }
+    const rmEvents = [];
+    elements.forEach(element => {
+      for (let key in events) {
+        const temp = Utils.remove(events[key], event => event.element === element);
+        if (temp.length > 0) {
+          rmEvents.concat(temp);
+          Utils.remove(registeredElements[key], ele => ele === element);
+        }
+      }
+    });
+    return rmEvents;
   }
 
   on(type, fun, element, once = false) {
@@ -63,13 +86,15 @@ export default class EventBus {
 
   off(type, fun, element) {
     if (!type) {
-      throw '必须传入需要移除的事件类型';
+      throw '必须传入需要移除的事件类型或者绑定的事件元素';
     }
     if (fun && typeof fun !== 'function') {
       element = fun;
       fun = null;
     }
-
+    if (this._isElement(type)) {
+      return this._clearEvent(type);
+    }
     const {events, registeredElements} = this;
     const eventType = events[type];
     const eleHash = registeredElements[type];
@@ -119,9 +144,7 @@ export default class EventBus {
     }
     let runEvents = events[type];
     const onceEvents = [];
-    const isElement =
-      element instanceof Element || element instanceof HTMLElement ||
-      (Array.isArray(element) && element.every(ele => (ele instanceof Element || ele instanceof HTMLElement)));
+    const isElement = this._isElement(element);
     if (!isElement) {
       data.unshift(element);
       element = null;

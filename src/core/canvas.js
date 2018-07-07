@@ -62,6 +62,7 @@ export default class Canvas extends EventBus {
     this.canvas.addEventListener('click', this._eventHandle, false);
     this.on('@@update', this.update);
     this.on('@@change', this._contentChange);
+    this.on('@@clear', this._clearEventAsync);
   }
 
   _initDrawInfo () {
@@ -108,6 +109,13 @@ export default class Canvas extends EventBus {
     } else {
       this._setComputed({ shapeLength: shapeLength + changeNum });
     }
+  }
+
+  _clearEventAsync ({ elements }) {
+    // console.log(elements);
+    setTimeout( () => {
+      this._clearEvent(elements);
+    }, 100);
   }
 
   getStatus () {
@@ -175,6 +183,7 @@ export default class Canvas extends EventBus {
       }
     });
     if (shape.length > 0) {
+      // 图层的remove方法会自动触发清除事件
       removed = this._background.remove(...shape);
       this.emit('@@change', 'shape', -removed.length);
     }
@@ -182,6 +191,7 @@ export default class Canvas extends EventBus {
       const rml = Utils.remove(this.layers, l => layer.includes(l));
       removed = removed.concat(rml);
       this.emit('@@change', 'layer', -rml.length);
+      this.emit('@@clearEvent', { elements: rml });
     }
 
     return removed;
