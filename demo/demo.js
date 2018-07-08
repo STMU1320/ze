@@ -30,6 +30,9 @@ function addShape (count = 1000) {
           y: getRandomNum(800),
           text: i
         },
+        style: {
+          fillStyle: ['#fff', 'blue', 'green', 'red'][ i % 4]
+        },
         animate: {
           attrs: {
             x: -50
@@ -45,7 +48,7 @@ function addShape (count = 1000) {
 
 
  const ctx = canvas.getContext();
- ctx.canvas.style.background = '#666';
+ ctx.canvas.style.background = '#333';
 
  addShape();
 

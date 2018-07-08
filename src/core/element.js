@@ -59,7 +59,7 @@ export default class Element {
         _style[key] = style[key];
       }
     });
-    this.style = Utils.assign({}, _style, parentStyle);
+    this.style = Utils.assign({}, parentStyle, _style);
   }
 
   _initAnimate (animate) {
