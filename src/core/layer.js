@@ -55,7 +55,7 @@ export default class Layer extends Element {
       offsetX = container.computed.offsetX + attrs.x;
       offsetY = container.computed.offsetY + attrs.y;
     }
-    Object.assign(this.computed, { offsetX, offsetY });
+    Utils.assign(this.computed, { offsetX, offsetY });
   }
 
   _draw (ctx) {

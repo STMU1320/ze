@@ -1,3 +1,4 @@
+import Utils from 'utils';
 import Inside from './utils/inside';
 
 export default class Line {
@@ -11,7 +12,7 @@ export default class Line {
   }
 
   constructor (cfg) {
-    this.attrs = Object.assign({}, Line.ATTRS, cfg);
+    this.attrs = Utils.assign({}, Line.ATTRS, cfg);
   }
 
   includes (x, y) {

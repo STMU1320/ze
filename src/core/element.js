@@ -1,5 +1,6 @@
 // 暂时把所有图形的事件都挂在canvas实列下，注册事件的图形过多后可能会对性能有影响.
 // import EventBus from './eventBus';
+import Utils from 'utils';
 import animate from './animate';
 
 const STYLE_KEYS = [
@@ -58,11 +59,15 @@ export default class Element {
         _style[key] = style[key];
       }
     });
-    this.style = Object.assign({}, _style, parentStyle);
+    this.style = Utils.assign({}, _style, parentStyle);
   }
 
   _initAnimate (animate) {
-    this.animateCfg = Object.assign({}, Element.DEFAULT_ANIMATE_CFG, animate);
+    this.animateCfg = Utils.assign({}, Element.DEFAULT_ANIMATE_CFG);
+    if (animate) {
+      const { attrs, duration, effect, callback, delay  } = animate;
+      this.animate(attrs, duration, effect, callback, delay);
+    }
   }
 
   _initComputed() {
@@ -94,7 +99,7 @@ export default class Element {
         nextAttrs[key] = ~~(from[key] + diff[key] * ratio + 0.5);
       });
       this.setAttrs(nextAttrs);
-      this.animateCfg.status = 'playing';
+      Utils.assign(this.animateCfg, { status: 'playing', lastTime: now });
       this.update('auto');
       this.timer = requestAnimationFrame(this._playAnimation);
     } else {
@@ -112,7 +117,7 @@ export default class Element {
     if (!this[key]) {
       this[key] = value;
     } else {
-      Object.assign(this[key], value);
+      Utils.assign(this[key], value);
     }
   }
 
@@ -173,7 +178,7 @@ export default class Element {
       from[key] = initAttrs[key];
       diff[key] = temp;
     });
-    Object.assign(this.animateCfg, {
+    Utils.assign(this.animateCfg, {
       duration,
       effect,
       status: 'ready',
@@ -194,7 +199,8 @@ export default class Element {
     const canvasStatus = canvas.getStatus();
     if (canvasStatus.drawn) {
       if (status === 'ready') {
-        Object.assign(this.animateCfg, {startTime: Date.now() + delay});
+        const startTime = Date.now() + delay;
+        Utils.assign(this.animateCfg, {startTime, lastTime: 0});
         this.timer = requestAnimationFrame(this._playAnimation);
       }
     } else {

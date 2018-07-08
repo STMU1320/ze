@@ -24,14 +24,21 @@ function addShape (count = 1000) {
   const { shapeLength } = canvas.computed;
   if (shapeLength < count) {
     for (let i = 0; i < count - shapeLength; i++) {
-      const text = canvas.addShape('text', {
+      canvas.addShape('text', {
         attrs: {
           x: 1000,
           y: getRandomNum(800),
           text: i
+        },
+        animate: {
+          attrs: {
+            x: -50
+          },
+          duration: getRandomNum(10000, 20000),
+          callback,
+          delay: getRandomNum(20000)
         }
       });
-      text.animate({ x: -50 }, getRandomNum(10000, 20000), callback, getRandomNum(20000));
     }
   }
 }

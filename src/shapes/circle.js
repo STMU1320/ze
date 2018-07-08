@@ -1,3 +1,4 @@
+import Utils from 'utils';
 import Inside from './utils/inside';
 export default class Circle {
 
@@ -9,7 +10,7 @@ export default class Circle {
   }
 
   constructor (cfg) {
-    this.attrs = Object.assign({}, Circle.ATTRS ,cfg);
+    this.attrs = Utils.assign({}, Circle.ATTRS ,cfg);
   }
 
   includes (clientX, clientY) {

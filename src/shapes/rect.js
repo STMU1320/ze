@@ -1,3 +1,4 @@
+import Utils from 'utils';
 import Inside from './utils/inside';
 export default class Rect {
 
@@ -10,7 +11,7 @@ export default class Rect {
   }
 
   constructor (cfg) {
-    this.attrs = Object.assign({}, Rect.ATTRS ,cfg);
+    this.attrs = Utils.assign({}, Rect.ATTRS ,cfg);
   }
 
   includes (clientX, clientY) {

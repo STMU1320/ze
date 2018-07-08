@@ -1,3 +1,4 @@
+import Utils from 'utils';
 import Inside from './utils/inside';
 
 export default class Text {
@@ -10,7 +11,7 @@ export default class Text {
   }
 
   constructor (cfg) {
-    this.attrs = Object.assign({}, Text.ATTRS ,cfg);
+    this.attrs = Utils.assign({}, Text.ATTRS ,cfg);
     this.computed = {};
   }
 
