@@ -1,6 +1,7 @@
+import Shape from '../core/shape';
 import Utils from 'utils';
 import Inside from './utils/inside';
-export default class Rect {
+export default class Rect extends Shape {
 
   static ATTRS = {
     x: 0,
@@ -10,16 +11,18 @@ export default class Rect {
     cw: false
   }
 
-  constructor (cfg) {
-    this.attrs = Utils.assign({}, Rect.ATTRS ,cfg);
+  constructor (cfg, container) {
+    const defaultCfg = Utils.assign({}, { attrs: Rect.ATTRS } ,cfg);
+    super('Rect', defaultCfg, container);
   }
 
   includes (clientX, clientY) {
     const { x, y, w, h } = this.attrs;
-    return Inside.rect(x, y, w, h, clientX, clientY);
+    const { computed: { offsetX, offsetY } } = this.container;
+    return Inside.rect(x, y, w, h, clientX - offsetX, clientY - offsetY);
   }
   
-  draw (ctx) {
+  _createPath (ctx) {
     const { x, y, w, h, cw } = this.attrs;
     ctx.beginPath();
     if (!cw) {

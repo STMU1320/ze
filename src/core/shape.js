@@ -1,6 +1,5 @@
 import Element from './element';
 import Utils from '../utils';
-import * as Shapes from '../shapes';
 
 export default class Shape extends Element {
 
@@ -16,17 +15,14 @@ export default class Shape extends Element {
       defaultCfg.attrs.hasFill = false;
       defaultCfg.attrs.hasStroke = true;
     }
-    super(container, 'Shape', defaultCfg);
-    if (!Shapes[type]) {
-      throw `目前还不支持${type}类型的图形`;
-    }
-    this.shape = new Shapes[type](defaultCfg.attrs);
-    this.attrs = this.shape.attrs;
-    this.type = type;
+    super(container, type, defaultCfg);
+  }
+
+  _createPath () {
   }
 
   _draw (ctx) {
-    const { attrs, style, shape, type } = this;
+    const { attrs, style } = this;
     const { hasStroke, hasFill, opacity } = attrs;
     const ga = ctx.globalAlpha;
     ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
@@ -34,23 +30,15 @@ export default class Shape extends Element {
     Object.keys(style).forEach(attr => {
       ctx[attr] = style[attr];
     });
-    shape.draw(ctx, { hasStroke, hasFill });
-    // text 的描边和填充直接在draw方法完成
-    if (type !== 'Text') {
-      if (hasStroke) {
-        ctx.stroke();
-      }
-      if (hasFill) {
-        ctx.fill();
-      }
+    this._createPath(ctx);
+    if (hasStroke && ctx.lineWidth > 0) {
+      ctx.stroke();
+    }
+    if (hasFill) {
+      ctx.fill();
     }
     ctx.globalAlpha = ga;
     ctx.restore();
-  }
-
-  includes (x, y) {
-    const { computed } = this.container;
-    return this.shape.includes(x - computed.offsetX, y - computed.offsetY);
   }
 
 }

@@ -56,7 +56,7 @@ export function assign (target, ...source) {
     }
     Object.keys(si).forEach(key => {
       if (target[key] && typeof target[key] === 'object') {
-        assign(target[key], si[key]);
+        target[key] = assign({}, target[key], si[key]);
       } else {
         target[key] = si[key];
       }

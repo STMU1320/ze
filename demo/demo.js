@@ -17,7 +17,7 @@ const canvas = new ZE.Canvas('container', {
   }
 });
 function callback (shape) {
-  canvas.remove(shape);
+  shape.destroy();
 };
 
 function addShape (count = 1000) {
@@ -40,6 +40,11 @@ function addShape (count = 1000) {
           duration: getRandomNum(10000, 20000),
           callback,
           delay: getRandomNum(20000)
+        },
+        event: {
+          click (e) {
+            console.log(e);
+          }
         }
       });
     }
@@ -50,9 +55,31 @@ function addShape (count = 1000) {
  const ctx = canvas.getContext();
  ctx.canvas.style.background = '#333';
 
+ canvas.addShape('rect', {
+    attrs: {
+      x: 50,
+      y: 50,
+      w: 100,
+      h: 200
+    }
+  });
+
+canvas.addShape('circle', {
+  attrs: {
+    x: 100,
+    y: 100,
+    r: 50,
+    hasStroke: true
+  },
+  style: {
+    strokeStyle: 'red',
+    lineWidth: 5
+  },
+});
+
  addShape();
 
- setInterval(addShape, 10000);
+//  setInterval(addShape, 10000);
 
 canvas.draw();
 

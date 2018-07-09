@@ -38,7 +38,7 @@ export default class Element {
   };
 
   constructor(container, type, cfg) {
-    const { attrs, style, animate, zIndex } = cfg;
+    const { attrs, style, animate, zIndex, event } = cfg;
     this.container = container;
     this.type = type;
     this.attrs = attrs;
@@ -47,6 +47,7 @@ export default class Element {
     this.zIndex = zIndex || 0;
     this._status = {drawn: false, dirty: false};
     this._initStyle(style);
+    this._initEvent(event);
     this._initComputed();
     this._initAnimate(animate);
   }
@@ -60,6 +61,14 @@ export default class Element {
       }
     });
     this.style = Utils.assign({}, parentStyle, _style);
+  }
+
+  _initEvent (event) {
+    if (event && typeof event === 'object') {
+      for (let key in event) {
+        this.on(key, event[key]);
+      }
+    }
   }
 
   _initAnimate (animate) {
@@ -230,5 +239,10 @@ export default class Element {
   off(type, fun) {
     const canvas = this.getCanvas();
     canvas.off(type, fun, this);
+  }
+
+  destroy () {
+    const canvas = this.getCanvas();
+    canvas.remove(this);
   }
 }

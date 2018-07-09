@@ -1,4 +1,4 @@
-import Shape from './shape';
+import * as Shapes from '../shapes';
 import Element from './element';
 import Utils from '../utils';
 
@@ -16,6 +16,7 @@ export default class Layer extends Element {
     this.shapes = [];
     this.deep = container instanceof Layer ? container.deep + 1 : 0;
     // offset 图层相对于canvas坐标原点的偏移量
+    this._setOffset();
     this._initPalette();
   }
 
@@ -96,7 +97,10 @@ export default class Layer extends Element {
 
   addShape (type, options = {}) {
     const shapeType = Utils.upperFirst(type);
-    const shape = new Shape(shapeType, options, this);
+    if (!Shapes[shapeType]) {
+      throw `目前还不支持${shapeType}类型的图形`;
+    }
+    const shape = new Shapes[shapeType](options, this);
     this._insertElement(shape, options.zIndex);
     return shape;
   }
