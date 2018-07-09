@@ -75,10 +75,14 @@ export default class Element {
   }
 
   _stopAnimation = cb => {
+    const canvas = this.getCanvas();
     if (this.timer) {
       cancelAnimationFrame(this.timer);
       this.timer = null;
     }
+    const animateCount = canvas.computed.animate;
+    canvas._setComputed({ animate: animateCount - 1 });
+    canvas.draw();
     cb && cb(this);
   };
 
@@ -87,9 +91,6 @@ export default class Element {
     const now = Date.now();
     const passTime = now - startTime;
     if (passTime < 0) {
-      // 此处有待验证哪种方式的性能会好些
-      // this.timer = requestAnimationFrame(this._playAnimation);
-      // return this.timer;
       return setTimeout(this._playAnimation, -passTime);
     } else if (passTime < duration) {
       const baseRatio = passTime / duration;
@@ -100,7 +101,6 @@ export default class Element {
       });
       this.setAttrs(nextAttrs);
       Utils.assign(this.animateCfg, { status: 'playing', lastTime: now });
-      this.update('auto');
       this.timer = requestAnimationFrame(this._playAnimation);
     } else {
       this.setAttrs(to);
@@ -200,8 +200,11 @@ export default class Element {
     if (canvasStatus.drawn) {
       if (status === 'ready') {
         const startTime = Date.now() + delay;
+        const animateCount = canvas.computed.animate;
+        canvas._setComputed({ animate: animateCount + 1 });
         Utils.assign(this.animateCfg, {startTime, lastTime: 0});
         this.timer = requestAnimationFrame(this._playAnimation);
+        canvas.draw();
       }
     } else {
       canvas.once('@@play', this.play);
@@ -216,18 +219,7 @@ export default class Element {
     return true;
   }
 
-  update(auto) {
-    const canvas = this.getCanvas();
-    canvas.emit('@@update', auto);
-    // const now = Date.now();
-    // // 判断一下是动画自动的更新还是手动触发的更新
-    // if (auto === 'auto') {
-    //   if (now - canvas.drawInfo.drawTime > 10) {
-    //     canvas.emit('@@update', 'auto');
-    //   }
-    // } else {
-    //   canvas.emit('@@update');
-    // }
+  update() {
   }
 
   on(event, fun) {

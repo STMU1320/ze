@@ -5,31 +5,32 @@ import Utils from 'utils';
 export default class Canvas extends EventBus {
   static ATTRS = {
     width: 300,
-    height: 300
-  }
-  constructor (ele, cfg) {
+    height: 300,
+  };
+  constructor(ele, cfg) {
     super();
     if (!ele) {
       ele = document.body;
-    } else if ( typeof ele === 'object' && !(ele instanceof HTMLElement)) {
+    } else if (typeof ele === 'object' && !(ele instanceof HTMLElement)) {
       cfg = ele;
       ele = document.body;
     }
-    const defaultCfg = Object.assign({}, Canvas.ATTRS, cfg);
-    const { width, height, style } = defaultCfg;
+    const defaultCfg = Utils.assign({}, Canvas.ATTRS, cfg);
+    const {width, height, style} = defaultCfg;
+    this.timer = null;
     this.width = width;
     this.height = height;
     this.style = style;
     this.layers = [];
-    this.computed = { shapeLength: 0, layerLength: 0 };
-    this._status = { drawn: false, dirty: false };
+    this.computed = {shapeLength: 0, layerLength: 0, animate: 0};
+    this._status = {drawn: false, dirty: false};
     this._initElement(ele);
     this._initEvent();
     this._initDrawInfo();
   }
 
-  _initElement (container) {
-    const { width, height, style } = this;
+  _initElement(container) {
+    const {width, height, style} = this;
     let canvas;
     if (typeof container === 'string') {
       container = document.getElementById(container);
@@ -56,36 +57,36 @@ export default class Canvas extends EventBus {
     }
   }
 
-  _initBackground () {
-    const background = new Layer({ zIndex: -1 }, this);
+  _initBackground() {
+    const background = new Layer({zIndex: -1}, this);
     this._background = background;
     this.layers.unshift(background);
     this.emit('@@change', 'layer', 1);
   }
 
-  _initEvent () {
+  _initEvent() {
     this.element.addEventListener('click', this._eventHandle, false);
-    this.on('@@update', this.update);
+    // this.on('@@update', this.update);
     this.on('@@change', this._contentChange);
     this.on('@@clear', this._clearEventAsync);
   }
 
-  _initDrawInfo () {
+  _initDrawInfo() {
     this.drawInfo = {
       drawTime: null,
-      fps: 0
+      fps: 0,
     };
   }
 
-  _updateDrawInfo () {
-    const { drawTime } = this.drawInfo;
+  _updateDrawInfo() {
+    const {drawTime} = this.drawInfo;
     const now = Date.now();
     const fps = drawTime ? ~~(1000 / (now - drawTime) + 0.5) : 0;
-    Object.assign(this.drawInfo, { fps, drawTime: now });
+    Utils.assign(this.drawInfo, {fps, drawTime: now});
   }
 
-  _eventHandle = (e) => {
-    const { x, y } = this._canvasPoint(e.clientX, e.clientY);
+  _eventHandle = e => {
+    const {x, y} = this._canvasPoint(e.clientX, e.clientY);
     const eventType = e.type;
     const subscribers = this.registeredElements[eventType];
     if (subscribers) {
@@ -97,57 +98,55 @@ export default class Canvas extends EventBus {
       });
       this.emit(eventType, triggerElements, e);
     }
+  };
+
+  _setComputed(obj) {
+    Utils.assign(this.computed, obj);
   }
 
-  _setComputed (obj) {
-    Object.assign(this.computed, obj);
-  }
-
-  _contentChange (type, changeNum) {
-    const { shapeLength, layerLength } = this.computed;
+  _contentChange(type, changeNum) {
+    const {shapeLength, layerLength} = this.computed;
     if (type === 'layer') {
-      this._setComputed({ layerLength: layerLength + changeNum });
+      this._setComputed({layerLength: layerLength + changeNum});
     } else {
-      this._setComputed({ shapeLength: shapeLength + changeNum });
+      this._setComputed({shapeLength: shapeLength + changeNum});
     }
   }
 
-  _clearEventAsync ({ shapes }) {
-    // console.log(elements);
-    setTimeout( () => {
+  _clearEventAsync({shapes}) {
+    setTimeout(() => {
       this._clearEvent(shapes);
     }, 100);
   }
 
-  _canvasPoint (clientX, clientY) {
+  _canvasPoint(clientX, clientY) {
     const canvas = this.element;
     const canvasBox = canvas.getBoundingClientRect();
     const width = canvasBox.right - canvasBox.left;
     const height = canvasBox.bottom - canvasBox.top;
     return {
       x: (clientX - canvasBox.left) * (canvas.width / width),
-      y: (clientY - canvasBox.top) * (canvas.height / height)
+      y: (clientY - canvasBox.top) * (canvas.height / height),
     };
   }
 
-  _setStatus (status) {
+  _setStatus(status) {
     Object.assign(this._status, status);
   }
 
-  getStatus () {
+  getStatus() {
     return this._status;
   }
 
-  getContext () {
+  getContext() {
     return this.context;
   }
 
-  getCanvas () {
+  getCanvas() {
     return this;
   }
 
-
-  addShape (type, options) {
+  addShape(type, options) {
     if (!this._background) {
       this._initBackground();
     }
@@ -156,13 +155,16 @@ export default class Canvas extends EventBus {
     return shape;
   }
 
-  addLayer (options) {
+  addLayer(options) {
     const newLayer = new Layer(options, this);
     let zIndex = 0;
     if (options && options.zIndex) {
       zIndex = options.zIndex;
     }
-    const insertIndex = Utils.findLastIndex(this.layers, (layer) => layer.zIndex <= zIndex);
+    const insertIndex = Utils.findLastIndex(
+      this.layers,
+      layer => layer.zIndex <= zIndex
+    );
     if (insertIndex === -1) {
       this.layers.unshift(newLayer);
     } else {
@@ -172,7 +174,7 @@ export default class Canvas extends EventBus {
     return newLayer;
   }
 
-  remove (...shapes) {
+  remove(...shapes) {
     const shape = [];
     const layer = [];
     let removed = [];
@@ -192,32 +194,21 @@ export default class Canvas extends EventBus {
       const rml = Utils.remove(this.layers, l => layer.includes(l));
       removed = removed.concat(rml);
       this.emit('@@change', 'layer', -rml.length);
-      this.emit('@@clearEvent', { shapes: rml });
+      this.emit('@@clearEvent', {shapes: rml});
     }
 
     return removed;
   }
 
-  clear () {
-    const { element } = this;
+  clear() {
+    const {element} = this;
     this.context.clearRect(0, 0, element.width, element.height);
   }
 
-  update (auto) {
-    const { drawTime } = this.drawInfo;
-    const now = Date.now();
-    // 判断一下是动画自动的更新还是手动触发的更新
-    if (auto === 'auto') {
-      if (now - drawTime > 16) {
-        this.draw();
-      }
-    } else {
-      this.draw();
-    }
-    this._setStatus({ dirty: false });
+  update() {
   }
 
-  draw () {
+  _draw = () => {
     const ctx = this.context;
     const layers = this.layers;
     const status = this.getStatus();
@@ -228,9 +219,19 @@ export default class Canvas extends EventBus {
     });
 
     if (!status.drawn) {
-      this._setStatus({ drawn: true });
+      this._setStatus({drawn: true});
       this.emit('@@play');
     }
+    if (this.computed.animate > 0) {
+      this.timer = requestAnimationFrame(this._draw);
+    } else {
+      this.timer = null;
+    }
+  }
+  draw() {
+    if (this.timer) {
+      cancelAnimationFrame(this.timer);
+    }
+    this.timer = requestAnimationFrame(this._draw);
   }
 }
-
