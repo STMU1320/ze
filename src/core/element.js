@@ -73,9 +73,9 @@ export default class Element {
 
   _initAnimate (animate) {
     this.animateCfg = Utils.assign({}, Element.DEFAULT_ANIMATE_CFG);
+    console.log(animate);
     if (animate) {
-      const { attrs, duration, effect, callback, delay  } = animate;
-      this.animate(attrs, duration, effect, callback, delay);
+      this.animate(animate);
     }
   }
 
@@ -96,7 +96,7 @@ export default class Element {
   };
 
   _playAnimation = () => {
-    let {startTime, duration, to, diff, from, effect, cb} = this.animateCfg;
+    let {startTime, duration, to, diff, from, effect, callback, loop} = this.animateCfg;
     const now = Date.now();
     const passTime = now - startTime;
     if (passTime < 0) {
@@ -111,10 +111,14 @@ export default class Element {
       this.setAttrs(nextAttrs);
       Utils.assign(this.animateCfg, { status: 'playing', lastTime: now });
       this.timer = requestAnimationFrame(this._playAnimation);
+    } else if (loop){
+      this.setAttrs(from);
+      Utils.assign(this.animateCfg, { status: 'playing', lastTime: now, startTime: now });
+      this.timer = requestAnimationFrame(this._playAnimation);
     } else {
       this.setAttrs(to);
       this.animateCfg.status = 'stop';
-      this._stopAnimation(cb);
+      this._stopAnimation(callback);
     }
   };
 
@@ -158,26 +162,14 @@ export default class Element {
     return this.canvas;
   }
 
-  animate(attrs, duration, effect, cb, delay = 0, autoPlay = true) {
-    if (typeof effect === 'function') {
-      delay = cb;
-      cb = effect;
-      effect = 'linear';
-    } else if (typeof effect === 'number') {
-      delay = effect;
-      cb = null;
-      effect = 'linear';
-    }
-    if (typeof cb === 'number') {
-      delay = cb;
-      cb = null;
-    }
-    if (!animate[effect]) {
-      effect = 'linear';
+  animate(cfg = {}) {
+    const {attrs, duration, effect = 'linear', callback, delay = 0, loop, autoPlay = true} = cfg;
+    if (!attrs || !duration) {
+      return ;
     }
     const currentCfg = this.animateCfg;
     if (currentCfg.status === 'playing') {
-      this._stopAnimation(currentCfg.cb);
+      this._stopAnimation(currentCfg.callback);
     }
     const initAttrs = this.attrs;
     const from = {};
@@ -194,8 +186,9 @@ export default class Element {
       to: attrs,
       from,
       diff,
-      cb,
+      callback,
       delay,
+      loop
     });
     if (autoPlay) {
       this.play();
