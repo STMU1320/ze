@@ -7,29 +7,32 @@ export default class Text extends Shape {
   static ATTRS = {
     text: '',
     x: 0,
-    y: 0,
-
+    y: 0
   }
 
   constructor (cfg, container) {
-    const defaultCfg = Utils.assign({}, { attrs: Text.ATTRS } ,cfg);
+    const defaultCfg = Utils.assign({}, { attrs: Text.ATTRS, style: Text.STYLE } ,cfg);
     super('Text', defaultCfg, container);
   }
 
-  _getCtxFontSize (ctx) {
-    const size = /(^|\s)(\d{1,})px(\s|$)/ig.exec(ctx.font)[2];
+  // _setFontStyle (style) {
+
+  // }
+
+  _getCtxFontSize (font) {
+    const size = /(^|\s)(\d{1,})px(\s|$)/ig.exec(font)[2];
     return size ? +size : 0;
   }
 
   includes (clientX, clientY) {
-    let { x, y, text, font, textBaseline } = this.attrs;
+    let { x, y, text } = this.attrs;
+    const { font, textBaseline } = this.style;
     let { w, h } = this.computed;
     const { computed: { offsetX, offsetY } } = this.container;
     if (!w || !h) {
       const ctx = document.createElement('canvas').getContext('2d');
-      ctx.font = font;
-      h = this._getCtxFontSize(ctx);
-      w = ctx.measureText(text).width;
+      h = this._getCtxFontSize(font);
+      w = ~~(ctx.measureText(text).width + 0.5);
       this.computed.w = w;
       this.computed.h = h;
     }
@@ -49,26 +52,26 @@ export default class Text extends Shape {
   }
   
   _draw (ctx) {
-    let _font = ctx.font, baseLine = ctx.textBaseline;
     const { attrs, style } = this;
-    const { x, y, text, font, textBaseline, hasFill, hasStroke, opacity } = attrs;
+    const { x, y, text, hasFill, hasStroke, opacity } = attrs;
+    // const { textBaseline } = style;
     const ga = ctx.globalAlpha;
-    ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+    if (opacity !==1) {
+      ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+    }
     ctx.save();
     Object.keys(style).forEach(attr => {
       ctx[attr] = style[attr];
     });
     // 这里主要为计算文字的w,h准备
-    if (this._getCtxFontSize(ctx) < 12) {
-      _font = _font.replace(/(^|\s)(\d{1,}px)(\s|$)/ig, ' 12px ');
-      ctx.font = _font;
-    }
-    if (_font !== font) {
-      this.attrs.font = _font;
-    }
-    if (baseLine !== textBaseline) {
-      this.attrs.textBaseline = baseLine;
-    }
+    // if (this._getCtxFontSize(ctx) < 12) {
+    //   _font = _font.replace(/(^|\s)(\d{1,}px)(\s|$)/ig, ' 12px ');
+    //   ctx.font = _font;
+    //   this.style.font = _font;
+    // }
+    // if (!textBaseline) {
+    //   this.style.textBaseline = baseLine;
+    // }
     if (hasFill) {
       ctx.fillText(text, x, y);
     }

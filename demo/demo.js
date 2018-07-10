@@ -13,35 +13,34 @@ const canvas = new ZE.Canvas('container', {
   height: 800,
   style: {
     fillStyle: '#fff',
-    font: '16px sans-serif'
   }
 });
 function callback (shape) {
-  // shape.destroy();
-  console.log('done');
+  shape.destroy();
 };
 
-function addShape (count = 3) {
+function addShape (count = 500) {
   const { shapeLength } = canvas.computed;
   if (shapeLength < count) {
     for (let i = 0; i < count - shapeLength; i++) {
       canvas.addShape('text', {
         attrs: {
-          x: 300,
+          x: 1000,
           y: getRandomNum(800),
           text: i
         },
         style: {
-          fillStyle: ['#fff', 'blue', 'green', 'red'][ i % 4]
+          fillStyle: ['#fff', 'blue', 'green', 'red'][ i % 4],
+          fontSize: getRandomNum(16, 32)
         },
         animate: {
           attrs: {
-            x: 100
+            x: -50
           },
           duration: getRandomNum(10000, 20000),
           callback,
           delay: getRandomNum(20000),
-          loop: true
+          // repeat: true
         },
         event: {
           click (e) {
@@ -57,47 +56,9 @@ function addShape (count = 3) {
  const ctx = canvas.getContext();
  ctx.canvas.style.background = '#333';
 
-//  canvas.addShape('rect', {
-//     attrs: {
-//       x: 50,
-//       y: 50,
-//       w: 100,
-//       h: 200
-//     },
-//     animate: {
-//       attrs: {
-//         w: 300
-//       },
-//       duration: 1000,
-//       loop: true
-//     },
-//   });
-
-const circle = canvas.addShape('circle', {
-  attrs: {
-    x: 500,
-    y: 500,
-    r: 50,
-    hasStroke: true
-  },
-  style: {
-    strokeStyle: 'red',
-    lineWidth: 5
-  }
-});
-
-circle.animate({
-  attrs: {
-    r: 300
-  },
-  duration: 1000,
-  loop: true
-});
-
  addShape();
 
-//  setInterval(addShape, 10000);
+ setInterval(addShape, 10000);
 
 canvas.draw();
-
 console.log(canvas);

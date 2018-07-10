@@ -25,7 +25,9 @@ export default class Shape extends Element {
     const { attrs, style } = this;
     const { hasStroke, hasFill, opacity } = attrs;
     const ga = ctx.globalAlpha;
-    ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+    if (opacity !== 1) {
+      ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+    }
     ctx.save();
     Object.keys(style).forEach(attr => {
       ctx[attr] = style[attr];
@@ -37,7 +39,9 @@ export default class Shape extends Element {
     if (hasFill) {
       ctx.fill();
     }
-    ctx.globalAlpha = ga;
+    if (opacity !== 1) {
+      ctx.globalAlpha = ga;
+    }
     ctx.restore();
   }
 

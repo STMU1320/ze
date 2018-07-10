@@ -54,13 +54,50 @@ export default class Element {
  
   _initStyle (style = {}) {
     const parentStyle = this.container.style;
-    const _style = {};
+    const _style = this._getFontStyle(style);;
     Object.keys(style).forEach(key => {
       if (STYLE_KEYS.includes(key)) {
         _style[key] = style[key];
       }
     });
     this.style = Utils.assign({}, parentStyle, _style);
+  }
+
+  _getFontStyle (style) {
+    const result = {};
+    const ctx = this.container.getContext();
+    const parentFont = ctx.font;
+    result.textBaseline = ctx.textBaseline;
+    const pFontArr = parentFont.split(/(\d{1,}px)/ig);
+    if (!style.font) {
+      let font = [''];
+      if (style.fontStyle ) {
+        font[0] = font[0] + style.fontStyle + ' ';
+      }
+      if (style.fontWeight ) {
+        font[0] = font[0] + style.fontWeight + ' ';
+      }
+      if (style.fontVariant ) {
+        font[0] = font[0] + style.fontVariant + ' ';
+      }
+      if (style.fontSize) {
+        const fontSize  = typeof style.fontSize === 'string' ? style.fontSize : `${style.fontSize}px`;
+        font[1] = fontSize;
+      } else {
+        font[1] = pFontArr[1];
+      }
+      if (style.fontFamily) {
+        font[2] = fontFamily;
+      } else {
+        font[2] = pFontArr[2];
+      }
+      font[0] = font[0] || pFontArr[0];
+      if (parseInt(font[1]) < 12) {
+        font[1] = '12px';
+      }
+      result.font = font.join(' ');
+    }
+    return result;
   }
 
   _initEvent (event) {
@@ -73,7 +110,6 @@ export default class Element {
 
   _initAnimate (animate) {
     this.animateCfg = Utils.assign({}, Element.DEFAULT_ANIMATE_CFG);
-    console.log(animate);
     if (animate) {
       this.animate(animate);
     }
@@ -96,7 +132,7 @@ export default class Element {
   };
 
   _playAnimation = () => {
-    let {startTime, duration, to, diff, from, effect, callback, loop} = this.animateCfg;
+    let {startTime, duration, to, diff, from, effect, callback, repeat} = this.animateCfg;
     const now = Date.now();
     const passTime = now - startTime;
     if (passTime < 0) {
@@ -106,12 +142,12 @@ export default class Element {
       const ratio = animate[effect](baseRatio);
       const nextAttrs = {};
       Object.keys(from).forEach(key => {
-        nextAttrs[key] = ~~(from[key] + diff[key] * ratio + 0.5);
+        nextAttrs[key] = from[key] + diff[key] * ratio;
       });
       this.setAttrs(nextAttrs);
       Utils.assign(this.animateCfg, { status: 'playing', lastTime: now });
       this.timer = requestAnimationFrame(this._playAnimation);
-    } else if (loop){
+    } else if (repeat){
       this.setAttrs(from);
       Utils.assign(this.animateCfg, { status: 'playing', lastTime: now, startTime: now });
       this.timer = requestAnimationFrame(this._playAnimation);
@@ -163,7 +199,7 @@ export default class Element {
   }
 
   animate(cfg = {}) {
-    const {attrs, duration, effect = 'linear', callback, delay = 0, loop, autoPlay = true} = cfg;
+    const {attrs, duration, effect = 'linear', callback, delay = 0, repeat, autoPlay = true} = cfg;
     if (!attrs || !duration) {
       return ;
     }
@@ -188,7 +224,7 @@ export default class Element {
       diff,
       callback,
       delay,
-      loop
+      repeat
     });
     if (autoPlay) {
       this.play();
