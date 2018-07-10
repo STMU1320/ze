@@ -258,6 +258,8 @@ export default class Element {
   }
 
   update() {
+    const canvas = this.getCanvas();
+    canvas.update();
   }
 
   on(event, fun) {

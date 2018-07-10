@@ -26,6 +26,7 @@ export default class Canvas extends EventBus {
     this._status = {drawn: false, dirty: false};
     this._initElement(ele);
     this._initEvent();
+    this._initBackground();
     this._initDrawInfo();
   }
 
@@ -147,9 +148,6 @@ export default class Canvas extends EventBus {
   }
 
   addShape(type, options) {
-    if (!this._background) {
-      this._initBackground();
-    }
     const shape = this._background.addShape(type, options);
     this.emit('@@change', 'shape', 1);
     return shape;
@@ -165,8 +163,10 @@ export default class Canvas extends EventBus {
       this.layers,
       layer => layer.zIndex <= zIndex
     );
+    console.log(insertIndex);
     if (insertIndex === -1) {
       this.layers.unshift(newLayer);
+      console.log(this.layers);
     } else {
       this.layers.splice(insertIndex + 1, 0, newLayer);
     }
@@ -206,6 +206,10 @@ export default class Canvas extends EventBus {
   }
 
   update() {
+    const { drawn } = this.getStatus();
+    if (drawn) {
+      this.draw();
+    }
   }
 
   _draw = () => {

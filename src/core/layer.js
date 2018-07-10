@@ -96,7 +96,10 @@ export default class Layer extends Element {
   }
 
   addShape (type, options = {}) {
-    const shapeType = Utils.upperFirst(type);
+    let shapeType = Utils.upperFirst(type);
+    if (shapeType === 'Image') {
+      shapeType = 'ZImage';
+    }
     if (!Shapes[shapeType]) {
       throw `目前还不支持${shapeType}类型的图形`;
     }

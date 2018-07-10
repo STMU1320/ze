@@ -15,6 +15,9 @@ const canvas = new ZE.Canvas('container', {
     fillStyle: '#fff',
   }
 });
+
+const layer = canvas.addLayer({zIndex: -2});
+
 function callback (shape) {
   shape.destroy();
 };
@@ -52,6 +55,16 @@ function addShape (count = 500) {
   }
 }
 
+layer.addShape('image', {
+  attrs: {
+    x: 0,
+    y: 0,
+    w: canvas.width,
+    h: canvas.height,
+    img: 'http://t1.niutuku.com/960/24/24-617747.jpg',
+  }
+});
+
 
  const ctx = canvas.getContext();
  ctx.canvas.style.background = '#333';
@@ -59,6 +72,6 @@ function addShape (count = 500) {
  addShape();
 
  setInterval(addShape, 10000);
-
 canvas.draw();
+
 console.log(canvas);
