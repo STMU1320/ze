@@ -22,8 +22,7 @@ export default class ZVideo extends Shape {
 
   includes (clientX, clientY) {
     const { x, y, w, h } = this.attrs;
-    const { computed: { offsetX, offsetY } } = this.container;
-    return Inside.rect(x, y, w, h, clientX - offsetX, clientY - offsetY);
+    return Inside.rect(x, y, w, h, clientX, clientY);
   }
 
   _createVideo (src) {

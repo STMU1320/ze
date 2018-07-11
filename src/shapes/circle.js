@@ -17,8 +17,7 @@ export default class Circle extends Shape {
 
   includes (clientX, clientY) {
     const { x, y, r } = this.attrs;
-    const { computed: { offsetX, offsetY } } = this.container;
-    return Inside.circle(x, y, r, clientX - offsetX, clientY - offsetY);
+    return Inside.circle(x, y, r, clientX, clientY);
   }
   
   _createPath (ctx) {

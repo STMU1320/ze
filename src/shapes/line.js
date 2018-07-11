@@ -18,8 +18,7 @@ export default class Line extends Shape {
 
   includes (x, y) {
     const { x1, y1, x2, y2, lineWidth } = this.attrs;
-    const { computed: { offsetX, offsetY } } = this.container;
-    return Inside.line(x1, y1, x2, y2, lineWidth, x - offsetX, y - offsetY);
+    return Inside.line(x1, y1, x2, y2, lineWidth, x, y);
   }
   
   _createPath (ctx) {

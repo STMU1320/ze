@@ -1,24 +1,26 @@
 import Shape from '../core/shape';
 import Utils from 'utils';
 import Inside from './utils/inside';
-export default class Rect extends Shape {
+export default class Polygon extends Shape {
 
   static ATTRS = {
     x: 0,
     y: 0,
-    w: 10,
-    h: 10,
-    cw: false
+    r: 50,
+    angle: 0,
+    regular: false,
+    cw: false,
+    points: []
   }
 
   constructor (cfg, container) {
-    const defaultCfg = Utils.assign({}, { attrs: Rect.ATTRS } ,cfg);
-    super('Rect', defaultCfg, container);
+    const defaultCfg = Utils.assign({}, { attrs: Polygon.ATTRS } ,cfg);
+    super('Polygon', defaultCfg, container);
   }
 
   includes (clientX, clientY) {
     const { x, y, w, h } = this.attrs;
-    return Inside.rect(x, y, w, h, clientX, clientY);
+    return Inside.box(x, y, w, h, clientX, clientY);
   }
   
   _createPath (ctx) {

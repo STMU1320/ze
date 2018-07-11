@@ -67,6 +67,10 @@ export default class Canvas extends EventBus {
 
   _initEvent() {
     this.element.addEventListener('click', this._eventHandle, false);
+    this.element.addEventListener('dblclick', this._eventHandle, false);
+    this.element.addEventListener('mousedown', this._eventHandle, false);
+    this.element.addEventListener('mouseup', this._eventHandle, false);
+    this.element.addEventListener('mousemove', this._eventHandle, false);
     // this.on('@@update', this.update);
     this.on('@@change', this._contentChange);
     this.on('@@clear', this._clearEventAsync);
@@ -87,12 +91,17 @@ export default class Canvas extends EventBus {
   }
 
   _eventHandle = e => {
-    const {x, y} = this._canvasPoint(e.clientX, e.clientY);
+    let {x, y} = this._canvasPoint(e.clientX, e.clientY);
     const eventType = e.type;
     const subscribers = this.registeredElements[eventType];
     if (subscribers) {
       let triggerElements = [];
       subscribers.forEach(element => {
+        if (element.container.type === 'Layer') {
+          const { offsetX, offsetY } = element.container.computed;
+          x -= offsetX;
+          y -= offsetY;
+        }
         if (element.includes(x, y)) {
           triggerElements.push(element);
         }

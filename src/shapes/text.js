@@ -28,7 +28,6 @@ export default class Text extends Shape {
     let { x, y, text } = this.attrs;
     const { font, textBaseline } = this.style;
     let { w, h } = this.computed;
-    const { computed: { offsetX, offsetY } } = this.container;
     if (!w || !h) {
       const ctx = document.createElement('canvas').getContext('2d');
       h = this._getCtxFontSize(font);
@@ -48,7 +47,7 @@ export default class Text extends Shape {
         y = y -  h;
         break;
     }
-    return Inside.rect(x, y, w, h, clientX - offsetX, clientY - offsetY);
+    return Inside.rect(x, y, w, h, clientX, clientY);
   }
   
   _draw (ctx) {
