@@ -3,5 +3,6 @@ export { default as Rect } from './rect';
 export { default as Circle } from './circle';
 export { default as Text } from './text';
 export { default as ZImage } from './image';
+export { default as ZVideo } from './video';
 
  

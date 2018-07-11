@@ -100,6 +100,9 @@ export default class Layer extends Element {
     if (shapeType === 'Image') {
       shapeType = 'ZImage';
     }
+    if (shapeType === 'Video') {
+      shapeType = 'ZVideo';
+    }
     if (!Shapes[shapeType]) {
       throw `目前还不支持${shapeType}类型的图形`;
     }

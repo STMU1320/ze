@@ -1,22 +1,22 @@
 import Shape from '../core/shape';
 import Utils from 'utils';
 import Inside from './utils/inside';
-export default class ZImage extends Shape {
+export default class ZVideo extends Shape {
 
   static ATTRS = {
     x: 0,
     y: 0,
     w: 10,
     h: 10,
-    img: void(0)
+    video: void(0)
   }
 
   constructor (cfg, container) {
-    const defaultCfg = Utils.assign({}, { attrs: ZImage.ATTRS } ,cfg);
-    super('Image', defaultCfg, container);
-    if (typeof this.attrs.img === 'string') {
+    const defaultCfg = Utils.assign({}, { attrs: ZVideo.ATTRS } ,cfg);
+    super('Video', defaultCfg, container);
+    if (typeof this.attrs.video === 'string') {
       this.setStatus({ loading: true });
-      this._createImage(this.attrs.img);
+      this._createVideo(this.attrs.video);
     }
   }
 
@@ -26,14 +26,22 @@ export default class ZImage extends Shape {
     return Inside.rect(x, y, w, h, clientX - offsetX, clientY - offsetY);
   }
 
-  _createImage (src) {
-    const img = new Image();
-    img.onload = () => {
-      this.setAttrs({ img });
-      this.setStatus({ loading: false });
-      this.update();
+  _createVideo (src) {
+    const { w, h } = this.attrs;
+    const video = document.createElement('video');
+    video.setAttribute('width', w);
+    video.setAttribute('height', h);
+    video.setAttribute('preload', 'metadata');
+    video.onplay = () => {
+      this.play();
     };
-    img.src = src;
+    video.onloadedmetadata = (e) => {
+      this.setAttrs({ video });
+      this.setStatus({ loading: false });
+      this.animate({ attrs: {}, duration: ~~(e.timeStamp * 1000 + 0.5) });
+      video.play();
+    };
+    video.src = src;
   }
 
   _createPath (ctx) {
@@ -45,7 +53,7 @@ export default class ZImage extends Shape {
   
   _draw (ctx) {
     const { attrs, style } = this;
-    const { hasStroke, opacity, img, x, y, w, h } = attrs;
+    const { hasStroke, opacity, video, x, y, w, h } = attrs;
     const { loading } = this.getStatus();
     const ga = ctx.globalAlpha;
     if (opacity !== 1) {
@@ -59,8 +67,8 @@ export default class ZImage extends Shape {
     if (hasStroke && ctx.lineWidth > 0) {
       ctx.stroke();
     }
-    if ((img instanceof HTMLImageElement || img instanceof HTMLCanvasElement) && !loading) {
-      ctx.drawImage(img, x, y, w, h);
+    if (video instanceof HTMLVideoElement && !loading) {
+      ctx.drawImage(video, x, y, w, h);
     }
     if (opacity !== 1) {
       ctx.globalAlpha = ga;
