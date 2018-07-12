@@ -65,7 +65,7 @@ layer.addShape('image', {
     y: 0,
     w: canvas.width,
     h: canvas.height,
-    img: 'http://119.147.39.233/6774435E4C8387164F87B418A/03000B01005B4535FBA5E4F2BEEFCF21988718-6C1E-4F65-B5E3-00E577AC85B9.mp4?ccode=0502&duration=226&expire=18000&psid=9263f3783e01bd8d176ceb28c8e89ef7&sp=&ups_client_netip=7418425b&ups_ts=1531271619&ups_userid=&utid=av6sE2xGpzYCAXd7epJXGLWS&vid=XMzcxNjExNjgwOA%3D%3D&vkey=B369e3997a8398a9bdcb85a2a92daa7bc&s=5882db0d0cb64392b1a5&ali_redirect_domain=vali-dns.cp31.ott.cibntv.net',
+    img: 'http://pic1.win4000.com/wallpaper/9/58cb92c57b28f.jpg',
   }
 });
 
