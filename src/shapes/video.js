@@ -55,10 +55,10 @@ export default class ZVideo extends Shape {
     const { hasStroke, opacity, video, x, y, w, h } = attrs;
     const { loading } = this.getStatus();
     const ga = ctx.globalAlpha;
+    ctx.save();
     if (opacity !== 1) {
       ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
     }
-    ctx.save();
     Object.keys(style).forEach(attr => {
       ctx[attr] = style[attr];
     });
@@ -68,9 +68,6 @@ export default class ZVideo extends Shape {
     }
     if (video instanceof HTMLVideoElement && !loading) {
       ctx.drawImage(video, x, y, w, h);
-    }
-    if (opacity !== 1) {
-      ctx.globalAlpha = ga;
     }
     ctx.restore();
   }

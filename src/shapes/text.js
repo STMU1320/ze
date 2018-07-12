@@ -19,21 +19,28 @@ export default class Text extends Shape {
 
   // }
 
-  _getCtxFontSize (font) {
-    const size = /(^|\s)(\d{1,})px(\s|$)/ig.exec(font)[2];
-    return size ? +size : 0;
+  _updateComputed () {
+    let ctx = this._cacheCtx;
+    if (!ctx) {
+      ctx = document.createElement('canvas').getContext('2d');
+      this._cacheCtx = ctx;
+    }
+    let { text } = this.attrs;
+    const { font } = this.style;
+    ctx.font = font;
+    const h = this._getFontSize(font);
+    const w = ~~(ctx.measureText(text).width + 0.5);
+    Utils.assign(this.computed, { w, h });
   }
 
   includes (clientX, clientY) {
-    let { x, y, text } = this.attrs;
-    const { font, textBaseline } = this.style;
+    let { x, y } = this.attrs;
+    const { textBaseline } = this.style;
     let { w, h } = this.computed;
     if (!w || !h) {
-      const ctx = document.createElement('canvas').getContext('2d');
-      h = this._getCtxFontSize(font);
-      w = ~~(ctx.measureText(text).width + 0.5);
-      this.computed.w = w;
-      this.computed.h = h;
+      this._updateComputed();
+      w = this.computed.w;
+      h = this.computed.h;
     }
     switch (textBaseline) {
       case 'bottom':
@@ -55,10 +62,10 @@ export default class Text extends Shape {
     const { x, y, text, hasFill, hasStroke, opacity } = attrs;
     // const { textBaseline } = style;
     const ga = ctx.globalAlpha;
+    ctx.save();
     if (opacity !==1) {
       ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
     }
-    ctx.save();
     Object.keys(style).forEach(attr => {
       ctx[attr] = style[attr];
     });
@@ -77,7 +84,6 @@ export default class Text extends Shape {
     if (hasStroke) {
       ctx.strokeText(text, x, y);
     }
-    ctx.globalAlpha = ga;
     ctx.restore();
   }
 }

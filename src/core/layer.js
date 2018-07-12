@@ -13,10 +13,10 @@ export default class Layer extends Element {
   constructor (cfg = {}, container) {
     const defaultCfg = Utils.assign({},  { attrs: Layer.ATTRS }, cfg);
     super(container, 'Layer', defaultCfg);
+    this._status = Utils.assign(this._status, { styleChanged: true });
     this.shapes = [];
-    this.deep = container instanceof Layer ? container.deep + 1 : 0;
-    // offset 图层相对于canvas坐标原点的偏移量
-    this._setOffset();
+    // 计算图层相对于canvas坐标原点的偏移量
+    this._updateComputed();
     this._initPalette();
   }
 
@@ -34,22 +34,28 @@ export default class Layer extends Element {
     this.palette = document.createElement('canvas');
     this.palette.width = canvas.element.width;
     this.palette.height = canvas.element.height;
-    this._initBrush();
+    const brush = this.palette.getContext('2d');
+    this.brush = brush;
+    // this._initBrush();
   }
 
   _initBrush () {
-    const brush = this.palette.getContext('2d');
-    const { attrs, style } = this;
+    const { attrs, style, brush } = this;
     const { opacity } = attrs;
+    const parentCtx = this.container.getContext();
     Object.keys(style).forEach(attr => {
       brush[attr] = style[attr];
     });
-    brush.globalAlpha = Utils.clamp(brush.globalAlpha * opacity, 0, 1);
-    this.brush = brush;
+    if (opacity !== 1) {
+      brush.globalAlpha = Utils.clamp(parentCtx.globalAlpha * opacity, 0, 1);
+    } else {
+      brush.globalAlpha = parentCtx.globalAlpha;
+    }
+    
   }
 
-  _setOffset () {
-    const { attrs, container } = this;
+  _updateComputed () {
+    const { attrs, container, shapes } = this;
     let offsetX = attrs.x,
         offsetY = attrs.y;
     if (container.type === 'Layer') {
@@ -57,12 +63,21 @@ export default class Layer extends Element {
       offsetY = container.computed.offsetY + attrs.y;
     }
     Utils.assign(this.computed, { offsetX, offsetY });
+    // 更新图层的偏移量，应该有更好的实现机制
+    shapes.forEach(shape => {
+      if (shape.type === 'Layer') {
+        shape._updateComputed();
+      }
+    });
   }
 
   _draw (ctx) {
     const { shapes, brush, palette, attrs } = this;
     const { x, y } = attrs;
     const status = this.getStatus();
+    if (status.styleChanged) {
+      this._initBrush();
+    }
     if (!status.drawn || status.dirty) {
       brush.clearRect(0, 0, palette.width, palette.height);
       shapes.forEach(shape => {
@@ -70,17 +85,11 @@ export default class Layer extends Element {
       });
     }
     ctx.drawImage(palette, x, y, palette.width, palette.height);
-    this.setStatus({ drawn: true, dirty: false });
+    this.setStatus({ drawn: true, dirty: false, styleChanged: false });
   }
 
   getContext () {
     return this.brush;
-  }
-
-  setAttrs (attrs) {
-    super.setAttrs(attrs);
-    this._setOffset();
-    
   }
 
   includes (clientX, clientY) {
