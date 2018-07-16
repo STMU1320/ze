@@ -14,9 +14,13 @@ export default class ZVideo extends Shape {
   constructor (cfg, container) {
     const defaultCfg = Utils.assign({}, { attrs: ZVideo.ATTRS } ,cfg);
     super('Video', defaultCfg, container);
-    if (typeof this.attrs.video === 'string') {
+    const { video } = this.attrs;
+    if (typeof video === 'string') {
       this.setStatus({ loading: true });
-      this._createVideo(this.attrs.video);
+      this._createVideo(video);
+      if (/\.m3u8$/ig.test(video)) {
+        this._loadHlsLib();
+      }
     }
   }
 
@@ -25,20 +29,39 @@ export default class ZVideo extends Shape {
     return Inside.rect(x, y, w, h, clientX, clientY);
   }
 
+  _loadHlsLib () {
+    const { video } = this.attrs;
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src='https://cdn.jsdelivr.net/npm/hls.js@latest';
+    document.body.appendChild(script);
+    script.onload = () => {
+      const hls = new Hls();
+      hls.loadSource(video.getAttribute('src'));
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED,function() {
+        video.play();
+    });
+    };
+  }
+
   _createVideo (src) {
     const { w, h } = this.attrs;
     const video = document.createElement('video');
     video.setAttribute('width', w);
     video.setAttribute('height', h);
     video.setAttribute('preload', 'metadata');
+    this.setAttrs({ video });
     video.onplay = () => {
       this.play();
     };
     video.onloadedmetadata = (e) => {
-      this.setAttrs({ video });
       this.setStatus({ loading: false });
-      this.animate({ attrs: {}, duration: ~~(e.timeStamp * 1000 + 0.5) });
+      this.animate({ props: {}, duration: ~~(e.timeStamp * 1000 + 0.5) });
       video.play();
+    };
+    video.onended = () => {
+      this._stopAnimation();
     };
     video.src = src;
   }

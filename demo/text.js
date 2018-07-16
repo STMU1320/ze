@@ -7,11 +7,6 @@ function getRandomNum (min, max) {
   return Math.round(Math.random() * (max - min) + min);
 }
 
-// const bgImg = document.getElementById('bgImg');
-// const bgctx = bgImg.getContext('2d');
-// bgctx.fillRect(10, 10, 50, 50);
-
-
 const canvas = new ZE.Canvas('container', {
   width: 1000,
   height: 800,

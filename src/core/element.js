@@ -209,7 +209,7 @@ export default class Element {
 
   setAttrs(props) {
     // 改变属性后自动更新计算属性并将自己设为脏值状态表示在下一次绘画中需要重新绘制
-    if (Utils.isEmpty(props)) {
+    if (Utils.isEmpty(props) && this.type !== 'Video') {
       return ;
     }
     const attrs = {}, style = {}, nextStatus = { dirty: true };
