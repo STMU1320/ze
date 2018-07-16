@@ -37,13 +37,13 @@ function addShape (count = 1000) {
           text: i
         },
         style: {
-          fillStyle: ['#fff', 'blue', 'green', 'red'][ i % 4],
+          fillStyle: ['#fff', 'blueviolet', 'seagreen', 'crimson'][ i % 4],
           fontSize: getRandomNum(16, 32)
         },
         animate: {
           props: {
             x: -50,
-            // opacity: 0.1
+            fillStyle: 'rosybrown'
           },
           duration: getRandomNum(10000, 20000),
           callback,
@@ -60,20 +60,35 @@ function addShape (count = 1000) {
   }
 }
 
-layer.addShape('image', {
+const polygon =  canvas.addShape('Polygon', {
   attrs: {
-    x: 0,
-    y: 0,
-    w: canvas.width,
-    h: canvas.height,
-    img: 'http://pic1.win4000.com/wallpaper/9/58cb92c57b28f.jpg',
+    points: [
+      [10, 10],
+      [15, 20],
+      [60, 30],
+      [45, 90],
+      [100, 300]
+    ]
   }
 });
+
+polygon.on('click', () => console.log(1));
+
+// layer.addShape('image', {
+//   attrs: {
+//     x: 0,
+//     y: 0,
+//     w: canvas.width,
+//     h: canvas.height,
+//     img: 'http://pic1.win4000.com/wallpaper/9/58cb92c57b28f.jpg',
+//   }
+// });
 
  const ctx = canvas.getContext();
  ctx.canvas.style.background = '#333';
 
- addShape();
+//  addShape();
 
- setInterval(addShape, 10000);
+//  setInterval(addShape, 10000);
 canvas.draw();
+console.log(polygon);

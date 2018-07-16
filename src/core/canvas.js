@@ -124,9 +124,9 @@ export default class Canvas extends EventBus {
   }
 
   _clearEventAsync({shapes}) {
-    setTimeout(() => {
-      this._clearEvent(shapes);
-    }, 100);
+    this._clearEvent(shapes);
+    // setTimeout(() => {
+    // }, 100);
   }
 
   _canvasPoint(clientX, clientY) {

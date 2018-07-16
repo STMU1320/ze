@@ -50,7 +50,7 @@ export default {
   circle(cx, cy, r, x, y) {
     return Math.pow(x - cx, 2) + Math.pow(y - cy, 2) <= Math.pow(r, 2);
   },
-  box(minX, maxX, minY, maxY, x, y) {
+  box(minX, minY, maxX, maxY, x, y) {
     return minX <= x && x <= maxX && minY <= y && y <= maxY;
   }
 };
