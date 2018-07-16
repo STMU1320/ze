@@ -154,6 +154,7 @@ export default class Element {
       effect,
       callback,
       repeat,
+      loop
     } = this.animateCfg;
     const now = Date.now();
     const passTime = now - startTime;
@@ -169,6 +170,14 @@ export default class Element {
       this.setAttrs(nextProps);
       Utils.assign(this.animateCfg, {status: 'playing', lastTime: now});
       this.timer = requestAnimationFrame(this._playAnimation);
+    } else if (loop) {
+      this.setAttrs(to);
+      this.animate({
+        props: from,
+        loop,
+        duration,
+        effect
+      });
     } else if (repeat) {
       this.setAttrs(from);
       Utils.assign(this.animateCfg, {
@@ -275,6 +284,7 @@ export default class Element {
       callback,
       delay = 0,
       repeat,
+      loop,
       autoPlay = true,
     } = cfg;
     if (!props || !duration) {
@@ -316,6 +326,7 @@ export default class Element {
       callback,
       delay,
       repeat,
+      loop
     });
     if (autoPlay) {
       this.play();
