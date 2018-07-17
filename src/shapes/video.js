@@ -28,6 +28,14 @@ export default class ZVideo extends Shape {
     const { x, y, w, h } = this.attrs;
     return Inside.rect(x, y, w, h, clientX, clientY);
   }
+  _videoPlay () {
+    const { video } = this.attrs;
+    try {
+      video.play();
+    } catch (error) {
+    }
+
+  }
 
   _loadHlsLib () {
     const { video } = this.attrs;
@@ -39,8 +47,8 @@ export default class ZVideo extends Shape {
       const hls = new Hls();
       hls.loadSource(video.getAttribute('src'));
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED,function() {
-        video.play();
+      hls.on(Hls.Events.MANIFEST_PARSED,() => {
+        this._videoPlay();
     });
     };
   }
@@ -58,12 +66,14 @@ export default class ZVideo extends Shape {
     video.onloadedmetadata = (e) => {
       this.setStatus({ loading: false });
       this.animate({ props: {}, duration: ~~(e.timeStamp * 1000 + 0.5) });
-      video.play();
+      this._videoPlay();
     };
     video.onended = () => {
       this._stopAnimation();
     };
+    video.muted = true;
     video.src = src;
+    document.addEventListener('click', () => { video.muted = false; });
   }
 
   _createPath (ctx) {
