@@ -1,6 +1,7 @@
 import Shape from '../core/shape';
 import Utils from 'utils';
 import Inside from './utils/inside';
+import { generate } from './math/polygon';
 export default class Polygon extends Shape {
 
   static ATTRS = {
@@ -8,28 +9,28 @@ export default class Polygon extends Shape {
     y: 0,
     r: 50,
     angle: 0,
-    count: 0,
+    vertices: 0,
     regular: false,
     cw: false,
     points: []
   }
 
   constructor (cfg, container) {
+    if (cfg.attrs && cfg.attrs.vertices > 100) {
+      console.warn('Polygon vertices for a maximum of 100');
+      cfg.attrs.vertices = 100;
+    }
     const defaultCfg = Utils.assign({}, { attrs: Polygon.ATTRS } ,cfg);
     super('Polygon', defaultCfg, container);
-    if (this.attrs.regular && this.attrs.count > 2) {
+    if (this.attrs.regular && this.attrs.vertices > 2) {
       this._initPathPoints();
     }
   }
 
   _initPathPoints() {
-    // const { r, angle, count, x, y} = this.attrs;
-    // const points = [ [x, y - r] ];
-    // const vertexAngle = Math.PI * 2/ count;
-    // for (let i = 1; i < count; i++) {
-    //   const prePoint = points[i - 1];
-
-    // }
+    const { r, vertices, x, y} = this.attrs;
+    const points = generate({ r, x, y, vertices });
+    this.setAttrs({ points });
   }
 
   _updateComputed () {

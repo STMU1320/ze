@@ -56,6 +56,10 @@ export default class ZVideo extends Shape {
   _createVideo (src) {
     const { w, h } = this.attrs;
     const video = document.createElement('video');
+    const setVideoHandle = () => {
+      video.muted = false;
+      document.removeEventListener('click', setVideoHandle);
+    };
     video.setAttribute('width', w);
     video.setAttribute('height', h);
     video.setAttribute('preload', 'metadata');
@@ -73,7 +77,7 @@ export default class ZVideo extends Shape {
     };
     video.muted = true;
     video.src = src;
-    document.addEventListener('click', () => { video.muted = false; });
+    document.addEventListener('click', setVideoHandle);
   }
 
   _createPath (ctx) {
