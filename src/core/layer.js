@@ -20,7 +20,8 @@ export default class Layer extends Element {
     this._initPalette();
   }
 
-  _insertElement (ele, zIndex = 0) {
+  _insertElement (ele) {
+    let zIndex = ele.zIndex || 0;
     const index = Utils.findLastIndex(this.shapes, (shape) => shape.zIndex <= zIndex);
     if (index === -1 ) {
       this.shapes.unshift(ele);
@@ -105,6 +106,16 @@ export default class Layer extends Element {
   }
 
   addShape (type, options = {}) {
+    // let shape;
+    if (type instanceof Element) {
+      let animate = type.getOriginal('animate');
+      if (animate) {
+        options.animate = animate;
+      }
+      options = Utils.assign({}, type, options);
+      type = options.type;
+      // shape.container = this;
+    }
     let shapeType = Utils.upperFirst(type);
     if (shapeType === 'Image') {
       shapeType = 'ZImage';
@@ -116,13 +127,21 @@ export default class Layer extends Element {
       throw `目前还不支持${shapeType}类型的图形`;
     }
     const shape = new Shapes[shapeType](options, this);
-    this._insertElement(shape, options.zIndex);
+    this._insertElement(shape);
     return shape;
   }
 
-  addLayer (options = {}) {
+  addLayer (options = {}, _ops) {
+    // let newLayer;
+    if ( options instanceof Layer ) {
+      let animate = options.getOriginal('animate');
+      if (animate) {
+        options.animate = animate;
+      }
+      options = Utils.assign({}, options, _ops);
+    }
     const newLayer = new Layer(options, this);
-    this._insertElement(newLayer, options.zIndex);
+    this._insertElement(newLayer);
     return newLayer; 
   }
 

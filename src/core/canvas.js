@@ -162,12 +162,17 @@ export default class Canvas extends EventBus {
     return shape;
   }
 
-  addLayer(options) {
-    const newLayer = new Layer(options, this);
-    let zIndex = 0;
-    if (options && options.zIndex) {
-      zIndex = options.zIndex;
+  addLayer(options, _ops) {
+    // let newLayer;
+    if (options instanceof Layer) {
+      let animate = options.getOriginal('animate');
+      if (animate) {
+        options.animate = animate;
+      }
+      options = Utils.assign({}, options, _ops);
     }
+    const newLayer = new Layer(options, this);
+    const zIndex = newLayer.zIndex || 0;
     const insertIndex = Utils.findLastIndex(
       this.layers,
       layer => layer.zIndex <= zIndex

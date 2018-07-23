@@ -4,6 +4,7 @@ export { default as merge } from 'lodash/merge';
 export { default as remove } from 'lodash/remove';
 export { default as each } from 'lodash/forEach';
 export { default as clone } from 'lodash/clone';
+export { default as cloneDeep } from 'lodash/cloneDeep';
 export { default as isNil } from 'lodash/isNil';
 export { default as debounce } from 'lodash/debounce';
 export { default as findLastIndex } from 'lodash/findLastIndex';

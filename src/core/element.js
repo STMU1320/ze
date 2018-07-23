@@ -48,6 +48,7 @@ export default class Element {
     this.zIndex = zIndex || 0;
     this.deep = container instanceof Element ? container.deep + 1 : 0;
     this._status = {drawn: false, dirty: false};
+    this.__original__ = {};
     this._initStyle(style);
     this._initEvent(event);
     this._initComputed();
@@ -278,6 +279,11 @@ export default class Element {
     return this.canvas;
   }
 
+  getOriginal (key) {
+    const data = this.__original__[key];
+    return data && Utils.cloneDeep(data);
+  }
+
   animate(cfg = {}) {
     const {
       props,
@@ -330,6 +336,7 @@ export default class Element {
       repeat,
       loop
     });
+    this._set('__original__', { animate: cfg });
     if (autoPlay) {
       this.play();
     }

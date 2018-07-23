@@ -12,7 +12,7 @@ const canvas = new ZE.Canvas('container', {
 const ctx = canvas.getContext();
 ctx.canvas.style.background = '#333';
 
-canvas.addShape('polygon', {
+const p = canvas.addShape('polygon', {
   attrs: {
     r: 100,
     x: 200,
@@ -32,6 +32,16 @@ canvas.addShape('polygon', {
   },
   style: {
     fillStyle: 'red'
+  }
+});
+
+canvas.addShape(p, {
+  attrs: {
+    x: 600,
+    y: 200
+  },
+  style: {
+    fillStyle: 'blue'
   }
 });
 
