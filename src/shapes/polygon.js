@@ -1,7 +1,7 @@
 import Shape from '../core/shape';
 import Utils from 'utils';
 import Inside from './utils/inside';
-import { generate } from './math/polygon';
+import { generatePoints } from './math/polygon';
 export default class Polygon extends Shape {
 
   static ATTRS = {
@@ -28,8 +28,8 @@ export default class Polygon extends Shape {
   }
 
   _initPathPoints() {
-    const { r, vertices, x, y} = this.attrs;
-    const points = generate({ r, x, y, vertices });
+    const { r, vertices, x, y, angle} = this.attrs;
+    const points = generatePoints({ r, x, y, vertices, angle });
     this.setAttrs({ points });
   }
 
