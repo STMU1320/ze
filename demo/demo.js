@@ -17,9 +17,18 @@ canvas.addShape('polygon', {
     r: 100,
     x: 200,
     y: 200,
-    vertices: 5,
-    angle: 90,
+    vertices: 4,
+    // angle: 90,
     regular: true
+  },
+  animate: {
+    props: {
+      angle: 360,
+      r: 200
+    },
+    effect: 'easeIn',
+    duration: 5000,
+    loop: true
   },
   style: {
     fillStyle: 'red'

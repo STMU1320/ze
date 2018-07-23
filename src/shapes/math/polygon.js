@@ -10,10 +10,11 @@ export function generatePoints ({ r, x, y, vertices, angle }) {
 				points[half] = [x, y + r];
 			}
 			const vertexAngle = Math.PI * 2 / vertices;
-			const vectorProduct = vectorAngle => Math.round(r * r * Math.cos(vectorAngle));
+			const vectorProduct = vectorAngle => 0 | Math.round(r * r * Math.cos(vectorAngle));
 			
 			for(let i = 1; i <= (vertices - 1) / 2; i++) {
 				let pointX = 0, pointY = 0;
+				// 根据向量夹角公式和两点距离公式算出多边形的每一个顶点
 				const nowAngle = vertexAngle * i;
 				const p1x = points[0][0];
 				const p1y = points[0][1];
@@ -21,7 +22,7 @@ export function generatePoints ({ r, x, y, vertices, angle }) {
 				const eq1 = algebra.parse(vectorStr);
 				const yAns = eq1.solveFor('y');
 				const yStr = yAns.toString();
-				const eq2 = algebra.parse(`(x - ${x}) ^ 2 + (${ yStr } - ${y}) ^ 2 = ${ Math.pow(r, 2) }`);
+				const eq2 = algebra.parse(`(x - ${x}) ^ 2 + (${ yStr } - ${y}) ^ 2 = ${ 0 | Math.pow(r, 2) }`);
 				const xAns = eq2.solveFor('x').valueOf();
 				// debugger
 				xAns.forEach((_x, index) => {
@@ -49,6 +50,7 @@ export function generatePoints ({ r, x, y, vertices, angle }) {
 			}
 
 			if (angle) {
+				// 如有旋转角度根据矩阵变换求出每一个顶点变换后的值， 起始角度为-Y轴
 				const piAngle = angle / 180 * Math.PI;
 				const cos = Math.cos;
 				const sin = Math.sin;
