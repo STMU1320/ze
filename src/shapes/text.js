@@ -25,9 +25,10 @@ export default class Text extends Shape {
       ctx = document.createElement('canvas').getContext('2d');
       this._cacheCtx = ctx;
     }
-    let { text } = this.attrs;
+    const { text } = this.attrs;
     const { font } = this.style;
-    ctx.font = font;
+    const brash = this.getContext();
+    ctx.font = font || brash.font;
     const h = this._getFontSize(font);
     const w = ~~(ctx.measureText(text).width + 0.5);
     Utils.assign(this.computed, { w, h });
@@ -35,7 +36,7 @@ export default class Text extends Shape {
 
   includes (clientX, clientY) {
     let { x, y } = this.attrs;
-    const { textBaseline } = this.style;
+    const { textBaseline, textAlign } = this.style;
     let { w, h } = this.computed;
     if (!w || !h) {
       this._updateComputed();
@@ -52,6 +53,16 @@ export default class Text extends Shape {
     
       default:
         y = y -  h;
+        break;
+    }
+
+    switch (textAlign) {
+      case 'end':
+      case 'right':
+        x = x - w;
+        break;
+      case 'center':
+        x = x - w / 2;
         break;
     }
     return Inside.rect(x, y, w, h, clientX, clientY);

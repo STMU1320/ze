@@ -23,6 +23,7 @@ export default class Canvas extends EventBus {
     this.style = style;
     this.layers = [];
     this.computed = {shapeLength: 0, layerLength: 0, animate: 0};
+    this._heritage = { style };
     this._status = {drawn: false, dirty: false};
     this._initElement(ele);
     this._initEvent();
@@ -142,6 +143,15 @@ export default class Canvas extends EventBus {
 
   _setStatus(status) {
     Object.assign(this._status, status);
+  }
+
+  
+  _setHeritage (heritage) {
+    Object.assign(this._heritage, heritage);
+  }
+  
+  getHeritage () {
+    return this._heritage;
   }
 
   getStatus() {

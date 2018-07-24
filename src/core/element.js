@@ -48,6 +48,7 @@ export default class Element {
     this.zIndex = zIndex || 0;
     this.deep = container instanceof Element ? container.deep + 1 : 0;
     this._status = {drawn: false, dirty: false};
+    this._heritage = {};
     this.__original__ = {};
     this._initStyle(style);
     this._initEvent(event);
@@ -56,14 +57,16 @@ export default class Element {
   }
 
   _initStyle(style = {}) {
-    const parentStyle = this.container.style;
-    const _style = this._getFontStyle(style);
+    const parentHrt = this.container.getHeritage();
+    const parentStyle = parentHrt.style;
+    const drawStyle = this._getFontStyle(style);
     Object.keys(style).forEach(key => {
       if (STYLE_KEYS.includes(key)) {
-        _style[key] = style[key];
+        drawStyle[key] = style[key];
       }
     });
-    this.style = Utils.assign({}, parentStyle, _style);
+    this.style = drawStyle;
+    this._setHeritage({ style: Utils.assign({}, parentStyle, drawStyle) });
   }
 
   _getFontStyle(style) {
@@ -72,32 +75,27 @@ export default class Element {
     const ctx = parent.getContext();
     const parentFont = ctx.font;
     const pFontArr = parentFont.split(/(\d{1,}px)/ig);
-    result.textBaseline = parent.style.textBaseline || ctx.textBaseline;
-    if (!style.font) {
-      let font = [''];
-      if (style.fontStyle) {
-        font[0] = font[0] + style.fontStyle + ' ';
-      }
-      if (style.fontWeight) {
-        font[0] = font[0] + style.fontWeight + ' ';
-      }
-      if (style.fontVariant) {
-        font[0] = font[0] + style.fontVariant + ' ';
-      }
-      if (style.fontSize) {
-        const fontSize = typeof style.fontSize === 'string'
-          ? style.fontSize
-          : `${style.fontSize}px`;
-        font[1] = fontSize;
-      } else {
-        font[1] = pFontArr[1];
-      }
-      if (style.fontFamily) {
-        font[2] = style.fontFamily;
-      } else {
-        font[2] = pFontArr[2];
-      }
-      font[0] = font[0] || pFontArr[0];
+    let fontStyle = '', fontSize = '', fontFamily = '';
+    if (style.fontStyle) {
+      fontStyle = fontStyle + style.fontStyle + ' ';
+    }
+    if (style.fontWeight) {
+      fontStyle = fontStyle + style.fontWeight + ' ';
+    }
+    if (style.fontVariant) {
+      fontStyle = fontStyle + style.fontVariant + ' ';
+    }
+    if (style.fontSize) {
+      fontSize = typeof style.fontSize === 'string'
+        ? style.fontSize
+        : `${style.fontSize}px`;
+    }
+    if (style.fontFamily) {
+      fontFamily = style.fontFamily;
+    }
+
+    if (fontStyle || fontSize || fontFamily) {
+      const font = [fontStyle || pFontArr[0], fontSize || pFontArr[1], fontFamily || pFontArr[2]];
       if (parseInt(font[1]) < 12) {
         font[1] = '12px';
       }
@@ -208,6 +206,14 @@ export default class Element {
     }
   }
 
+  _setHeritage (heritage) {
+    Object.assign(this._heritage, heritage);
+  }
+  
+  getHeritage () {
+    return this._heritage;
+  }
+
   _clear () {}
 
   setAttrs(props) {
@@ -216,22 +222,24 @@ export default class Element {
       return ;
     }
     const attrs = {}, style = {}, nextStatus = { dirty: true };
+    const ctx = this.getContext();
     Object.keys(props).forEach(key => {
       const value = props[key];
       if (key === 'fontSize') {
-        style.font = this.style.font.replace(/(^|\s)(\d{1,}\.?\d*px)(\s|$)/ig, ` ${value}px `);
+        style.font = ctx.font.replace(/(^|\s)(\d{1,}\.?\d*px)(\s|$)/ig, ` ${value}px `);
       } else if (['fillStyle', 'strokeStyle'].includes(key)) {
         style[key] = value;
       } else {
         attrs[key] = value;
       }
     });
-    if (!Utils.isEmpty(style)) {
+    if (!Utils.isEmpty(style) || 'opacity' in attrs) {
       nextStatus.styleChanged = true;
-      this._set('style', style);
-    }
-    if ('opacity' in attrs) {
-      nextStatus.styleChanged = true;
+      // this._set('style', style);
+      // if (this.type === 'Layer') {
+      //   this._initBrush();
+      // }
+      this.setStyle(style);
     }
     if (!Utils.isEmpty(attrs)) {
       this._set('attrs', attrs);
@@ -247,11 +255,14 @@ export default class Element {
     }
     const keys = Object.keys(style);
     this._set('style', style);
-    if (this.shapes) {
-      this.shapes.forEach(shape => {
-        shape.setStyle(style);
-      });
-    }
+    // if (this.shapes) {
+    //   this.shapes.forEach(shape => {
+    //     shape.setStyle(style);
+    //   });
+    // }
+    const parentHrt = this.container.getHeritage();
+    const parentStyle = parentHrt.style;
+    this._setHeritage({ style: Utils.assign({}, parentStyle, style) });
     if (keys.includes('lineWidth') || keys.includes('font')) {
       this._updateComputed();
     }
@@ -304,17 +315,17 @@ export default class Element {
     }
     const initAttrs = this.attrs;
     const style = this.style;
+    const ctx = this.getContext();
     const from = {};
     const to = {};
     const diff = {};
     Object.keys(props).forEach(key => {
       let start = initAttrs[key];
       if (['fillStyle', 'strokeStyle'].includes(key)) {
-        const ctx = this.getContext();
         start = style[key] || ctx[key];
         diff[key] = interpolateRgb(start, props[key]);
       } else if (key === 'fontSize') {
-        start = this._getFontSize(style.font);
+        start = this._getFontSize(style.font || ctx.font);
         diff[key] = interpolateNumber(start, props[key]);
       } else if (typeof start === 'number') {
         diff[key] = interpolateNumber(start, props[key]);

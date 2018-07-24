@@ -13,7 +13,7 @@ export default class Layer extends Element {
   constructor (cfg = {}, container) {
     const defaultCfg = Utils.assign({},  { attrs: Layer.ATTRS }, cfg);
     super(container, 'Layer', defaultCfg);
-    this._status = Utils.assign(this._status, { styleChanged: true });
+    this._status = Utils.assign(this._status);
     this.shapes = [];
     // 计算图层相对于canvas坐标原点的偏移量
     this._updateComputed();
@@ -31,28 +31,34 @@ export default class Layer extends Element {
   }
 
   _initPalette () {
-    const canvas = this.container.getCanvas();
-    this.palette = document.createElement('canvas');
-    this.palette.width = canvas.element.width;
-    this.palette.height = canvas.element.height;
-    const brush = this.palette.getContext('2d');
-    this.brush = brush;
-    // this._initBrush();
+    if (!this.brush) {
+      const canvas = this.container.getCanvas();
+      this.palette = document.createElement('canvas');
+      this.palette.width = canvas.element.width;
+      this.palette.height = canvas.element.height;
+      const brush = this.palette.getContext('2d');
+      this.brush = brush;
+      this._initBrush();
+    }
   }
 
   _initBrush () {
     const { attrs, style, brush } = this;
     const { opacity } = attrs;
     const parentCtx = this.container.getContext();
-    Object.keys(style).forEach(attr => {
-      brush[attr] = style[attr];
+    const heritage = this.container.getHeritage();
+    const drawStyle = Object.assign({}, heritage.style, style);
+    Object.keys(drawStyle).forEach(attr => {
+      brush[attr] = drawStyle[attr];
     });
     if (opacity !== 1) {
       brush.globalAlpha = Utils.clamp(parentCtx.globalAlpha * opacity, 0, 1);
     } else {
       brush.globalAlpha = parentCtx.globalAlpha;
     }
-    
+    if (this._getFontSize(brush.font) < 12) {
+      brush.font = brush.font.replace(/(^|\s)(\d{1,}px)(\s|$)/ig, ' 12px ');
+    }
   }
 
   _updateComputed () {
@@ -75,8 +81,8 @@ export default class Layer extends Element {
   _draw (ctx) {
     const { shapes, brush, palette, attrs } = this;
     const { x, y } = attrs;
-    const status = this.getStatus();
-    if (status.styleChanged) {
+    const parentStatus = this.container.getStatus();
+    if (parentStatus.styleChanged) {
       this._initBrush();
     }
     if (!status.drawn || status.dirty) {
@@ -90,6 +96,9 @@ export default class Layer extends Element {
   }
 
   getContext () {
+    if (!this.brush) {
+      this._initPalette();
+    }
     return this.brush;
   }
 
