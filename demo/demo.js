@@ -6,32 +6,64 @@ const canvas = new ZE.Canvas('container', {
   }
 });
 
-for (let i = 0; i < 20; i++) {
-  const row = 0 | (i / 5);
-  const col = i % 5;
-  canvas.addShape('polygon', {
-    attrs: {
-      regular: true,
-      vertices: 3 + i,
-      r: 50,
-      x: 180 + col * 160,
-      y: 100 + row * 180
+canvas.addShape('polygon', {
+  attrs: {
+    regular: true,
+    vertices: 3,
+    r: 150,
+    x: 300,
+    y: 300
+  },
+  event: {
+    // mouseenter: (e) => { console.log('enter', e); },
+    click: (e) => {
+      console.log('3', e);
     },
-  });
-  canvas.addShape('text', {
-    attrs: {
-      text: `${3 + i} vertex`,
-      x: 180 + col * 160,
-      y: 170 + row * 180
+    // mouseout: (e) => console.log('out', e)
+  }
+});
+canvas.addShape('polygon', {
+  attrs: {
+    regular: true,
+    vertices: 4,
+    r: 100,
+    x: 300,
+    y: 300
+  },
+  style: {
+    fillStyle: 'red'
+  },
+  event: {
+    // mouseenter: (e) => { console.log('enter', e); },
+    click: (e) => {
+      console.log('4', e);
+      e.stopPropagation();
     },
-    style: {
-      textAlign: 'center'
+    // mouseout: (e) => console.log('out', e)
+  }
+});
+
+canvas.addShape('polygon', {
+  attrs: {
+    regular: true,
+    vertices: 5,
+    r: 50,
+    x: 300,
+    y: 300,
+    opacity: 0.6
+  },
+  style: {
+    fillStyle: 'blue'
+  },
+  event: {
+    // mouseenter: (e) => { console.log('enter', e); },
+    click: (e) => {
+      console.log('5', e);
+      // e.stopPropagation();
     },
-    event: {
-      click: () => console.log('click')
-    }
-  });
-}
+    // mouseout: (e) => console.log('out', e)
+  }
+});
 
 const ctx = canvas.getContext();
 ctx.canvas.style.background = '#333';

@@ -23,6 +23,7 @@ export default class Layer extends Element {
   _insertElement (ele) {
     let zIndex = ele.zIndex || 0;
     const index = Utils.findLastIndex(this.shapes, (shape) => shape.zIndex <= zIndex);
+    ele._weight = (ele._weight + index + 1);
     if (index === -1 ) {
       this.shapes.unshift(ele);
     } else {

@@ -8,6 +8,7 @@ export { default as cloneDeep } from 'lodash/cloneDeep';
 export { default as isNil } from 'lodash/isNil';
 export { default as debounce } from 'lodash/debounce';
 export { default as findLastIndex } from 'lodash/findLastIndex';
+export { default as differenceBy } from 'lodash/differenceBy';
 
 export function upperFirst (string) {
   if (isEmpty(string)) {

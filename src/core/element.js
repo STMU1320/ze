@@ -47,6 +47,7 @@ export default class Element {
     this.timer = null;
     this.zIndex = zIndex || 0;
     this.deep = container instanceof Element ? container.deep + 1 : 0;
+    this._weight = container instanceof Element ? container._weight + 1 : 0;
     this._status = {drawn: false, dirty: false};
     this._heritage = {};
     this.__original__ = {};

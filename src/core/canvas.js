@@ -92,22 +92,54 @@ export default class Canvas extends EventBus {
   }
 
   _eventHandle = e => {
-    let {x, y} = this._canvasPoint(e.clientX, e.clientY);
+    const {x, y} = this._canvasPoint(e.clientX, e.clientY);
     const eventType = e.type;
     const subscribers = this.registeredElements[eventType];
-    if (subscribers) {
-      let triggerElements = [];
-      subscribers.forEach(element => {
+
+    const listenerIter = (arr) => {
+      let out = [];
+      if (!Array.isArray(arr)) {
+        return;
+      }
+      arr.forEach(element => {
+        let layerX = x, layerY = y;
         if (element.container.type === 'Layer') {
-          const { offsetX, offsetY } = element.container.computed;
-          x -= offsetX;
-          y -= offsetY;
+          layerX -= element.container.computed.offsetX;
+          layerY -= element.container.computed.offsetY;
         }
-        if (element.includes(x, y)) {
-          triggerElements.push(element);
+        if (element.includes(layerX, layerY)) {
+          const position = { x, y, layerX, layerY };
+          const eventData = this._createEventData(eventType, element, position, e);
+          out.push({ element, eventData });
         }
       });
-      this.emit(eventType, triggerElements, e);
+      return out;
+    };
+
+    const trigger = listenerIter(subscribers);
+
+    if (eventType === 'mousemove') {
+      const iterate = (item) => item.element;
+      const lastTrigger = this._lastTrigger;
+      const outListener = this.registeredElements['mouseout'] || [];
+      const enterListener = this.registeredElements['mouseenter'] || [];
+      const all = [...outListener, ...enterListener];
+      const validTrigger = listenerIter(all);
+      
+      const out = Utils.differenceBy(lastTrigger, validTrigger, iterate);
+      const enter = Utils.differenceBy(validTrigger, lastTrigger, iterate);
+      // console.log('enter', enter);
+      // console.log(validTrigger);
+      if (!Utils.isEmpty(enter)) {
+        this.emit('mouseenter', enter);
+      }
+      if (!Utils.isEmpty(out)) {
+        this.emit('mouseout', out);
+      }
+      this._lastTrigger = validTrigger;
+    }
+    if (!Utils.isEmpty(trigger)) {
+      this.emit(eventType, trigger);
     }
   };
 
@@ -187,6 +219,7 @@ export default class Canvas extends EventBus {
       this.layers,
       layer => layer.zIndex <= zIndex
     );
+    newLayer._weight = (insertIndex + 1);
     if (insertIndex === -1) {
       this.layers.unshift(newLayer);
     } else {

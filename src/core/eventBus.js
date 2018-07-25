@@ -5,11 +5,22 @@ export default class EventBus {
   constructor() {
     this.events = {};
     this.registeredElements = {};
+    this._lastTrigger = [];
   }
 
   _isElement (element) {
     return element instanceof Element || element instanceof HTMLElement ||
     (Array.isArray(element) && element.every(ele => (ele instanceof Element || ele instanceof HTMLElement)));
+  }
+
+  _isElementEvent (elementEvent) {
+    if (Utils.isEmpty(elementEvent)) {
+      return false;
+    }
+    if (Array.isArray(elementEvent)) {
+      return elementEvent.every(ee => this._isElement(ee.element));
+    }
+    return this._isElement(elementEvent.element);
   }
 
   _createEvent(type, fun, element, once) {
@@ -21,11 +32,36 @@ export default class EventBus {
     };
   }
 
-  _passCondition(condition, target) {
-    if (Array.isArray(condition)) {
-      return condition.includes(target);
+  _createEventData (type, target, position, originEve = {}) {
+    const eve = {
+      origin: originEve,
+      x: position.x,
+      y: position.y,
+      layerX: position.layerX,
+      layerY: position.layerY,
+      type,
+      target,
+      prevent: false,
+      stop: false,
+      timeStamp: Date.now(),
+      preventDefault() {
+        eve.prevent = true;
+      },
+      stopPropagation() {
+        eve.stop = true;
+      }
+    };
+    return eve;
+  }
+
+  _getTriggerElement(elementEvent, target) {
+    let list = elementEvent;
+    if (!Array.isArray(elementEvent)) {
+      list = [elementEvent];
     }
-    return condition === target;
+
+    const eventItem = list.filter(item => item.element === target)[0];
+    return eventItem;
   }
 
   _clearEvent (elements) {
@@ -67,7 +103,21 @@ export default class EventBus {
         return event.callback === fun;
       });
       if (!hasEvent) {
-        eventType.push(event);
+        const insertIndex = Utils.findLastIndex(
+          eventType,
+          item => {
+            if (!item.element || !element) {
+              return true;
+            }
+            return element._weight >= item.element._weight;
+          }
+        );
+        if (insertIndex === -1) {
+          eventType.unshift(event);
+        } else {
+          eventType.splice( Math.max(insertIndex - 1, 0) , 0, event);
+        }
+        // eventType.push(event);
       }
     } else {
       events[type] = [event];
@@ -137,39 +187,50 @@ export default class EventBus {
     return deleteEvents;
   }
 
-  trigger(type, element, ...data) {
+  trigger(type, elementEvent, ...data) {
     const {events} = this;
     if (typeof type !== 'string') {
       throw '触发事件类型必须为string类型';
     }
-    let runEvents = events[type];
+    const triggerEvents = events[type];
+    // debugger
+    let runEvents = [];
     const onceEvents = [];
-    const isElement = this._isElement(element);
-    if (!isElement) {
-      data.unshift(element);
-      element = null;
+    const isElementEvent = this._isElementEvent(elementEvent);
+    if (triggerEvents) {
+      if (!isElementEvent) {
+        data.unshift(elementEvent);
+        elementEvent = null;
+        runEvents = triggerEvents;
+      } else {
+        triggerEvents.forEach(event => {
+          const triggerElement = this._getTriggerElement(elementEvent, event.element);
+          if (triggerElement) {
+            runEvents.push({ ...event, eventData: triggerElement.eventData });
+          }
+        });
+      }
     }
-    if (element) {
-      runEvents = runEvents.filter(event => {
-        // if (event.element) {
-          
-        // }
-        // return true;
-        return this._passCondition(element, event.element);
-      });
+    if (!Utils.isEmpty(runEvents)) {
+      let eventData;
+      for (let i = 0; i < runEvents.length; i++) {
+        const current = runEvents[i];
+        const params = [...data];
+        if (current.eventData) {
+          params.unshift(current.eventData);
+          eventData = current.eventData;
+        }
+        current.callback.apply(current.element || this, params);
+        if (current.once) {
+          onceEvents.push(current);
+        }
+        if (eventData && eventData.stop) {
+          return;
+        }
+      }
     }
-    runEvents &&
-      runEvents.forEach(event => {
-        if ( data[0] instanceof UIEvent && event.element ) {
-          data[0].shape =  event.element;
-        }
-        event.callback.apply(event.element || this, data);
-        if (event.once) {
-          onceEvents.push(event);
-        }
-      });
-    if (onceEvents.length > 0) {
-      Utils.remove(runEvents, event => onceEvents.includes(event));
+    if (!Utils.isEmpty(onceEvents)) {
+      Utils.remove(triggerEvents, event => onceEvents.includes(event));
     }
   }
 
