@@ -168,7 +168,7 @@ export default class Element {
         nextProps[key] = diff[key](ratio);
       });
       this.setAttrs(nextProps);
-      Utils.assign(this.animateCfg, {status: 'playing', lastTime: now});
+      Utils.assign(this.animateCfg, {status: 'playing', lastTime: now, current: nextProps, passTime });
       this.timer = requestAnimationFrame(this._playAnimation);
     } else if (loop) {
       this.setAttrs(to);
@@ -188,7 +188,11 @@ export default class Element {
       this.timer = requestAnimationFrame(this._playAnimation);
     } else {
       this.setAttrs(to);
-      this.animateCfg.status = 'stop';
+      Utils.assign(this.animateCfg, {
+        status: 'stop',
+        lastTime: now,
+        passTime: duration,
+      });
       this._stopAnimation(callback);
     }
   };
@@ -342,10 +346,12 @@ export default class Element {
       status: 'ready',
       to,
       from,
+      current: from,
       diff,
       callback,
       delay,
       repeat,
+      passTime: 0,
       loop
     });
     this._set('__original__', { animate: cfg });

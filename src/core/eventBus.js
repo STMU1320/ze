@@ -112,10 +112,10 @@ export default class EventBus {
             return element._weight >= item.element._weight;
           }
         );
-        if (insertIndex === -1) {
+        if (insertIndex < 1) {
           eventType.unshift(event);
         } else {
-          eventType.splice( Math.max(insertIndex - 1, 0) , 0, event);
+          eventType.splice(insertIndex - 1 , 0, event);
         }
         // eventType.push(event);
       }

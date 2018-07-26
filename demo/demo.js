@@ -6,64 +6,60 @@ const canvas = new ZE.Canvas('container', {
   }
 });
 
-canvas.addShape('polygon', {
-  attrs: {
-    regular: true,
-    vertices: 3,
-    r: 150,
-    x: 300,
-    y: 300
-  },
-  event: {
-    // mouseenter: (e) => { console.log('enter', e); },
-    click: (e) => {
-      console.log('3', e);
+for (let i = 0; i < 20; i++) {
+  const row = 0 | (i / 5);
+  const col = i % 5;
+  canvas.addShape('polygon', {
+    attrs: {
+      regular: true,
+      vertices: 3 + i,
+      r: 50,
+      x: 180 + col * 160,
+      y: 100 + row * 180
     },
-    // mouseout: (e) => console.log('out', e)
-  }
-});
-canvas.addShape('polygon', {
-  attrs: {
-    regular: true,
-    vertices: 4,
-    r: 100,
-    x: 300,
-    y: 300
-  },
-  style: {
-    fillStyle: 'red'
-  },
-  event: {
-    // mouseenter: (e) => { console.log('enter', e); },
-    click: (e) => {
-      console.log('4', e);
-      e.stopPropagation();
+    event: {
+      mouseenter (e) {
+        const target = e.target;
+        target.animate({
+          props: {
+            fillStyle: 'red',
+            r: 60,
+            angle: 360
+          },
+          duration: 800,
+          effect: 'easeOut',
+          // loop: true
+        });
+      },
+      mouseout (e) {
+        const target = e.target;
+        const { passTime } = target.animateCfg;
+        target.animate({
+          props: {
+            fillStyle: 'white',
+            r: 50,
+            angle: 0
+          },
+          duration: passTime,
+          effect: 'easeIn'
+        });
+      }
+    }
+  });
+  canvas.addShape('text', {
+    attrs: {
+      text: `${3 + i} vertex`,
+      x: 180 + col * 160,
+      y: 170 + row * 180
     },
-    // mouseout: (e) => console.log('out', e)
-  }
-});
-
-canvas.addShape('polygon', {
-  attrs: {
-    regular: true,
-    vertices: 5,
-    r: 50,
-    x: 300,
-    y: 300,
-    opacity: 0.6
-  },
-  style: {
-    fillStyle: 'blue'
-  },
-  event: {
-    // mouseenter: (e) => { console.log('enter', e); },
-    click: (e) => {
-      console.log('5', e);
-      // e.stopPropagation();
+    style: {
+      textAlign: 'center'
     },
-    // mouseout: (e) => console.log('out', e)
-  }
-});
+    event: {
+      click: (e) => console.log(e.target.attrs.text)
+    }
+  });
+}
 
 const ctx = canvas.getContext();
 ctx.canvas.style.background = '#333';

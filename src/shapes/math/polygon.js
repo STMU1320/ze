@@ -1,5 +1,5 @@
 const algebra = require('algebra.js');
-// const matrix = require('utils/matrix');
+const Utils = require('utils').default;
 
 export function generatePoints ({ r, x, y, vertices, angle }) {
 			const half =  vertices / 2;
@@ -49,7 +49,7 @@ export function generatePoints ({ r, x, y, vertices, angle }) {
 				});
 			}
 
-			if (angle) {
+			if (!Utils.isEmpty(angle)) {
 				// 如有旋转角度根据矩阵变换求出每一个顶点变换后的值， 起始角度为-Y轴
 				const piAngle = angle / 180 * Math.PI;
 				const cos = Math.cos;

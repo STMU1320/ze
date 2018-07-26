@@ -61,14 +61,14 @@ export default class Polygon extends Shape {
         'y' in props ||
         'angle' in props ||
         'vertices' in props) {
+          r = Utils.isEmpty(props.r) ? r : props.r;
+          vertices = props.vertices != null ? Utils.clamp(Math.round(props.vertices), 3, 100) : vertices;
+          x = Utils.isEmpty(props.x) ? x : props.x;
+          y = Utils.isEmpty(props.y) ? y : props.y;
+          angle = Utils.isEmpty(props.angle) ? angle : props.angle;
+          const points = generatePoints({r, x, y, vertices, angle});
+          props.points = points;
       }
-      r = props.r || r;
-      vertices = props.vertices != null ? Utils.clamp(Math.round(props.vertices), 3, 100) : vertices;
-      x = props.x || x;
-      y = props.y || y;
-      angle = props.angle || angle;
-      const points = generatePoints({r, x, y, vertices, angle});
-      props.points = points;
     }
     super.setAttrs(props);
   }

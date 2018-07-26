@@ -17,6 +17,34 @@ for (let i = 0; i < 20; i++) {
       x: 180 + col * 160,
       y: 100 + row * 180
     },
+    event: {
+      mouseenter (e) {
+        const target = e.target;
+        target.animate({
+          props: {
+            fillStyle: 'red',
+            r: 60,
+            angle: 360
+          },
+          duration: 800,
+          effect: 'easeOut',
+          // loop: true
+        });
+      },
+      mouseout (e) {
+        const target = e.target;
+        const { passTime } = target.animateCfg;
+        target.animate({
+          props: {
+            fillStyle: 'white',
+            r: 50,
+            angle: 0
+          },
+          duration: passTime,
+          effect: 'easeIn'
+        });
+      }
+    }
   });
   canvas.addShape('text', {
     attrs: {
@@ -28,7 +56,7 @@ for (let i = 0; i < 20; i++) {
       textAlign: 'center'
     },
     event: {
-      click: () => console.log('click')
+      click: (e) => console.log(e.target.attrs.text)
     }
   });
 }
