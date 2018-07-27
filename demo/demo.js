@@ -73,7 +73,8 @@ infoModal.addShape('rect', {
     y: 0,
     w: infoBoxWidth,
     h: infoBoxHeight,
-    opacity: 0.5
+    opacity: 0.5,
+    round: 5
   },
   style: {
     fillStyle: 'black'
@@ -101,8 +102,8 @@ const layer = canvas.addLayer({
   },
   event: {
     mouseenter (e) {
-      const x = clamp(e.x, padding, width - infoBoxWidth);
-      const y = clamp(e.y, 0, startY - infoBoxHeight);
+      const x = clamp(e.x + 20, padding, width - infoBoxWidth);
+      const y = clamp(e.y + 20, 0, startY - infoBoxHeight);
       infoModal.animate({
         props: {
           x,
@@ -117,8 +118,8 @@ const layer = canvas.addLayer({
       canvas.update();
     },
     mousemove(e) {
-      const x = clamp(e.x, padding, width - infoBoxWidth);
-      const y = clamp(e.y, 0, startY - infoBoxHeight);
+      const x = clamp(e.x + 20, padding, width - infoBoxWidth);
+      const y = clamp(e.y + 20, 0, startY - infoBoxHeight);
       infoModal.setAttrs({
         x,
         y

@@ -8,6 +8,7 @@ export default class Rect extends Shape {
     y: 0,
     w: 10,
     h: 10,
+    round: 0,
     cw: false
   }
 
@@ -22,15 +23,41 @@ export default class Rect extends Shape {
   }
   
   _createPath (ctx) {
-    const { x, y, w, h, cw } = this.attrs;
+    const { x, y, w, h, cw, round } = this.attrs;
+    const r = round;
+    const pi = Math.PI;
     ctx.beginPath();
-    if (!cw) {
-      ctx.rect(x, y, w, h);
+    if (r <= 0) {
+      if (!cw) {
+        ctx.rect(x, y, w, h);
+      } else {
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + h);
+        ctx.lineTo(x + w, y + h);
+        ctx.lineTo(x + w, y);
+      }
     } else {
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + h);
-      ctx.lineTo(x + w, y + h);
-      ctx.lineTo(x + w, y);
+      if (!cw) {
+        ctx.moveTo(x, y + r);
+        ctx.arc(x+r, y+r, r, pi, pi * 1.5);
+        ctx.lineTo(x + w - r, y);
+        ctx.arc(x+w-r, y+r, r, pi * 1.5, pi * 2);
+        ctx.lineTo(x + w, y + h -r);
+        ctx.arc(x+w-r, y+h-r, r, 0, pi / 2);
+        ctx.lineTo(x + r, y+h);
+        ctx.arc(x+r, y+h-r, r, pi / 2, pi);
+        ctx.lineTo(x, y+r);
+      } else {
+        ctx.moveTo(x, y + r);
+        ctx.lineTo(x, y+ h - r);
+        ctx.arc(x+r, y+h-r, r, pi, pi / 2, true);
+        ctx.lineTo(x + w - r, y + h);
+        ctx.arc(x+w-r, y+ h - r, r, pi / 2, 0, true);
+        ctx.lineTo(x + w, y + r);
+        ctx.arc(x + w - r, y + r, r, 0, pi * 1.5, true);
+        ctx.lineTo(x + r, y);
+        ctx.arc(x+r, y+r, r, pi * 1.5, pi, true);
+      }
     }
     ctx.closePath();    
   }
