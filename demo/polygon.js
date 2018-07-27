@@ -28,6 +28,7 @@ for (let i = 0; i < 20; i++) {
           },
           duration: 800,
           effect: 'easeOut',
+          callback: () => console.log('enter end')
           // loop: true
         });
       },
@@ -36,12 +37,13 @@ for (let i = 0; i < 20; i++) {
         const { passTime } = target.animateCfg;
         target.animate({
           props: {
-            fillStyle: 'white',
+            fillStyle: '#ffffff',
             r: 50,
             angle: 0
           },
           duration: passTime,
-          effect: 'easeIn'
+          effect: 'easeIn',
+          callback: () => console.log('out end')
         });
       }
     }

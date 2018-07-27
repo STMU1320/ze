@@ -69,32 +69,24 @@ export default class Text extends Shape {
   }
   
   _draw (ctx) {
-    const { attrs, style } = this;
+    const { attrs, style, visible } = this;
     const { x, y, text, hasFill, hasStroke, opacity } = attrs;
-    // const { textBaseline } = style;
     const ga = ctx.globalAlpha;
-    ctx.save();
-    if (opacity !==1) {
-      ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+    if (visible) {
+      ctx.save();
+      if (opacity !==1) {
+        ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+      }
+      Object.keys(style).forEach(attr => {
+        ctx[attr] = style[attr];
+      });
+      if (hasFill) {
+        ctx.fillText(text, x, y);
+      }
+      if (hasStroke) {
+        ctx.strokeText(text, x, y);
+      }
+      ctx.restore();
     }
-    Object.keys(style).forEach(attr => {
-      ctx[attr] = style[attr];
-    });
-    // 这里主要为计算文字的w,h准备
-    // if (this._getCtxFontSize(ctx) < 12) {
-    //   _font = _font.replace(/(^|\s)(\d{1,}px)(\s|$)/ig, ' 12px ');
-    //   ctx.font = _font;
-    //   this.style.font = _font;
-    // }
-    // if (!textBaseline) {
-    //   this.style.textBaseline = baseLine;
-    // }
-    if (hasFill) {
-      ctx.fillText(text, x, y);
-    }
-    if (hasStroke) {
-      ctx.strokeText(text, x, y);
-    }
-    ctx.restore();
   }
 }

@@ -23,6 +23,12 @@ export default class Line extends Shape {
   
   _createPath (ctx) {
     const { x1, y1, x2, y2 } = this.attrs;
+    const { lineWidth } = this.style;
+    if ((x1 === x2 && x1 % 1 === 0) || (y1 === y2 && y1 % 1 === 0)) {
+      if (lineWidth === 1) {
+        ctx.translate(-0.5, -0.5);
+      }
+    }
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);

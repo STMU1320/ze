@@ -22,24 +22,26 @@ export default class Shape extends Element {
   }
 
   _draw (ctx) {
-    const { attrs, style } = this;
+    const { attrs, style, visible } = this;
     const { hasStroke, hasFill, opacity } = attrs;
     const ga = ctx.globalAlpha;
-    ctx.save();
-    if (opacity !== 1) {
-      ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+    if (visible) {
+      ctx.save();
+      if (opacity !== 1) {
+        ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
+      }
+      Object.keys(style).forEach(attr => {
+        ctx[attr] = style[attr];
+      });
+      this._createPath(ctx);
+      if (hasStroke && ctx.lineWidth > 0) {
+        ctx.stroke();
+      }
+      if (hasFill) {
+        ctx.fill();
+      }
+      ctx.restore();
     }
-    Object.keys(style).forEach(attr => {
-      ctx[attr] = style[attr];
-    });
-    this._createPath(ctx);
-    if (hasStroke && ctx.lineWidth > 0) {
-      ctx.stroke();
-    }
-    if (hasFill) {
-      ctx.fill();
-    }
-    ctx.restore();
   }
 
 }

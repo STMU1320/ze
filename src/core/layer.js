@@ -80,20 +80,22 @@ export default class Layer extends Element {
   }
 
   _draw (ctx) {
-    const { shapes, brush, palette, attrs } = this;
+    const { shapes, brush, palette, attrs, visible } = this;
     const { x, y } = attrs;
     const parentStatus = this.container.getStatus();
     if (parentStatus.styleChanged) {
       this._initBrush();
     }
-    if (!status.drawn || status.dirty) {
-      brush.clearRect(0, 0, palette.width, palette.height);
-      shapes.forEach(shape => {
-        shape._draw(brush);
-      });
+    if (visible) {
+      if (!status.drawn || status.dirty) {
+        brush.clearRect(0, 0, palette.width, palette.height);
+        shapes.forEach(shape => {
+          shape._draw(brush);
+        });
+      }
+      ctx.drawImage(palette, x, y, palette.width, palette.height);
+      this.setStatus({ drawn: true, dirty: false, styleChanged: false });
     }
-    ctx.drawImage(palette, x, y, palette.width, palette.height);
-    this.setStatus({ drawn: true, dirty: false, styleChanged: false });
   }
 
   getContext () {

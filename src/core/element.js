@@ -39,12 +39,13 @@ export default class Element {
   };
 
   constructor(container, type, cfg) {
-    const {attrs, style, animate, zIndex, event} = cfg;
+    const {attrs, style, animate, zIndex, event, visible = true} = cfg;
     this.container = container;
     this.type = type;
     this.attrs = attrs;
     this.canvas = null;
     this.timer = null;
+    this.visible = visible;
     this.zIndex = zIndex || 0;
     this.deep = container instanceof Element ? container.deep + 1 : 0;
     this._weight = container instanceof Element ? container._weight + 1 : 0;
