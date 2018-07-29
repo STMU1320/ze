@@ -8,7 +8,7 @@ export default class Rect extends Shape {
     y: 0,
     w: 10,
     h: 10,
-    round: 0,
+    radius: 0,
     cw: false
   }
 
@@ -23,8 +23,8 @@ export default class Rect extends Shape {
   }
   
   _createPath (ctx) {
-    const { x, y, w, h, cw, round } = this.attrs;
-    const r = round;
+    const { x, y, w, h, cw, radius } = this.attrs;
+    const r = radius;
     const pi = Math.PI;
     ctx.beginPath();
     if (r <= 0) {

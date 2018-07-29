@@ -252,6 +252,7 @@ export default class Element {
     }
     this._updateComputed();
     this.setStatus(nextStatus);
+    return this;
   }
 
   setStyle(style) {
@@ -272,6 +273,7 @@ export default class Element {
     if (keys.includes('lineWidth') || keys.includes('font')) {
       this._updateComputed();
     }
+    return this;
   }
 
   setStatus(status) {
@@ -279,6 +281,7 @@ export default class Element {
     if (status.dirty) {
       this._noticeParentStatus({dirty: true});
     }
+    return this;
   }
 
   getStatus() {
@@ -359,6 +362,7 @@ export default class Element {
     if (autoPlay) {
       this.play();
     }
+    return this;
   }
 
   play = () => {
@@ -377,10 +381,12 @@ export default class Element {
     } else {
       canvas.once('@@play', this.play);
     }
+    return this;
   };
 
   stop() {
     this._stopAnimation(this.animateCfg.cb);
+    return this;
   }
 
   includes() {
@@ -390,21 +396,39 @@ export default class Element {
   update() {
     const canvas = this.getCanvas();
     canvas.update();
+    return this;
   }
 
   on(event, fun) {
     const canvas = this.getCanvas();
-    canvas.on(event, fun, this);
+    return canvas.on(event, fun, this);
   }
 
   off(type, fun) {
     const canvas = this.getCanvas();
-    canvas.off(type, fun, this);
+    return canvas.off(type, fun, this);
+  }
+
+  show () {
+    if (!this.visible) {
+      this.visible = true;
+      this.update();
+    }
+    return this;
+  }
+
+  hide () {
+    if (this.visible) {
+      this.visible = false;
+      this.update();
+    }
+    return this;
   }
 
   destroy() {
     this._clear();
     const canvas = this.getCanvas();
     canvas.remove(this);
+    return this;
   }
 }

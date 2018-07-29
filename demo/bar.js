@@ -3,7 +3,6 @@ function getRandomNum (min, max) {
     max = min;
     min = 0;
   }
-  max = max * 10; 
   return Math.round(Math.random() * (max - min) + min);
 }
 
@@ -16,29 +15,19 @@ function clamp (value, min, max) {
   return value;
 }
 
+function getData (num) {
+  const data = [];
+  while (--num > 0) {
+    data.unshift({
+      value: getRandomNum(500, 3000),
+    label: `商品${num}`
+    });
+  }
+  return data;
+}
 
-const data = [
-  {
-    value: getRandomNum(50, 300),
-    label: '商品1'
-  },
-  {
-    value: getRandomNum(50, 300),
-    label: '商品2'
-  },
-  {
-    value: getRandomNum(50, 300),
-    label: '商品3'
-  },
-  {
-    value: getRandomNum(50, 300),
-    label: '商品4'
-  },
-  {
-    value: getRandomNum(50, 300),
-    label: '商品5'
-  },
-];
+
+const data = getData(getRandomNum(5, 10));
 
 const canvas = new ZE.Canvas('container', {
   width: 800,
@@ -55,8 +44,8 @@ const innerWidth = width - padding * 2;
 const innerHeight = height - padding * 2;
 const startX = padding, startY = height - padding;
 
-const infoBoxWidth = 100;
-const infoBoxHeight = 60;
+const infoBoxWidth = 120;
+const infoBoxHeight = 80;
 
 const infoModal = canvas.addLayer({
   attrs: {
@@ -74,7 +63,7 @@ infoModal.addShape('rect', {
     w: infoBoxWidth,
     h: infoBoxHeight,
     opacity: 0.5,
-    round: 5
+    radius: 5
   },
   style: {
     fillStyle: 'black'
@@ -83,13 +72,12 @@ infoModal.addShape('rect', {
 
 const infoText = infoModal.addShape('text', {
   attrs: {
-    text: 'value: 0',
+    text: ['商品： 未知', '数量: 0'],
     x: 10,
-    y: infoBoxHeight / 2
+    y: 20
   },
   style: {
     fillStyle: 'white',
-    textBaseline: 'middle',
     fontSize: 16
   }
 });
@@ -110,12 +98,10 @@ const layer = canvas.addLayer({
           y
         },
         duration: 100
-      });
-      infoModal.visible = true;
+      }).show();
     },
     mouseout () {
-      infoModal.visible = false;
-      canvas.update();
+      infoModal.hide();
     },
     mousemove(e) {
       const x = clamp(e.x + 20, padding, width - infoBoxWidth);
@@ -123,8 +109,7 @@ const layer = canvas.addLayer({
       infoModal.setAttrs({
         x,
         y
-      });
-      canvas.update();
+      }).update();
     }
   }
 });
@@ -259,15 +244,14 @@ function draw (data) {
         visible: false,
         event: {
           mouseenter () {
+            this.show();
             infoText.setAttrs({
-              text: `value: ${item.value}`
+              text: [`商品： ${item.label}`, `数量: ${item.value}`]
             });
-            this.visible = true;
-            canvas.update();
           },
           mouseout () {
-            this.visible = false;
-            canvas.update();
+            console.log('mask out');
+            this.hide();
           }
         }
       });

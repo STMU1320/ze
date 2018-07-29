@@ -67,8 +67,8 @@ export default class Layer extends Element {
     let offsetX = attrs.x,
         offsetY = attrs.y;
     if (container.type === 'Layer') {
-      offsetX = container.computed.offsetX + attrs.x;
-      offsetY = container.computed.offsetY + attrs.y;
+      offsetX += container.computed.offsetX;
+      offsetY += container.computed.offsetY;
     }
     Utils.assign(this.computed, { offsetX, offsetY });
     // 更新图层的偏移量，应该有更好的实现机制
@@ -107,10 +107,10 @@ export default class Layer extends Element {
 
   includes (clientX, clientY) {
     const shapes = this.shapes;
-    const { offsetX, offsetY } = this.computed;
-    if (clientX >= offsetX && clientY >= offsetY) {
+    const { x, y } = this.attrs;
+    if (clientX >= x && clientY >= y) {
       if (shapes.length > 0) {
-        return shapes.some(shape => shape.includes(clientX, clientY));
+        return shapes.some(shape => shape.includes(clientX - x, clientY - y));
       }
     }
 
