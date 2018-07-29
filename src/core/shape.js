@@ -31,7 +31,16 @@ export default class Shape extends Element {
         ctx.globalAlpha = Utils.clamp(ga * opacity, 0, 1); 
       }
       Object.keys(style).forEach(attr => {
-        ctx[attr] = style[attr];
+        if (attr === 'lineDash' && ctx.setLineDash) {
+          const dash = style[attr];
+          if (Array.isArray(dash)) {
+            ctx.setLineDash(dash);
+          } else if (typeof dash === 'number') {
+            ctx.setLineDash([dash]);
+          }
+        } else {
+          ctx[attr] = style[attr];
+        }
       });
       this._createPath(ctx);
       if (hasStroke && ctx.lineWidth > 0) {

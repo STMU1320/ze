@@ -13,8 +13,21 @@ canvas.addShape('line', {
     y1: 10,
     x2: 1000,
     y2: 500,
-    dash: 5
+  },
+  style: {
+    lineDash: 5
   }
 });
+
+canvas.addShape('line', {
+  attrs: {
+    x1: 10,
+    y1: 10,
+    x2: 10,
+    y2: 500,
+  },
+});
+
+console.log(canvas.context.setLineDash);
 
 canvas.draw();
