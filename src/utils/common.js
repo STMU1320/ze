@@ -66,3 +66,7 @@ export function assign (target, ...source) {
   }
   return target;
 }
+
+export function translateToPi (angle) {
+  return angle / 180 * Math.PI;
+}

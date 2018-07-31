@@ -7,27 +7,36 @@ const canvas = new ZE.Canvas('container', {
   }
 });
 
-canvas.addShape('line', {
+// canvas.addShape('ring', {
+//   attrs: {
+//     x: 200,
+//     y: 200,
+//     inner: 50,
+//     outer: 100,
+//     angle: 360,
+//     start: 0,
+//     opacity: 0.1
+//   },
+//   event: {
+//     click () {
+//       console.log('1');
+//     }
+//   }
+// });
+canvas.addShape('ring', {
   attrs: {
-    x1: 0,
-    y1: 10,
-    x2: 1000,
-    y2: 500,
+    x: 200,
+    y: 200,
+    inner: 50,
+    outer: 100,
+    angle: -300,
+    start: 0
   },
-  style: {
-    lineDash: 5
+  event: {
+    click () {
+      console.log('click');
+    }
   }
 });
-
-canvas.addShape('line', {
-  attrs: {
-    x1: 10,
-    y1: 10,
-    x2: 10,
-    y2: 500,
-  },
-});
-
-console.log(canvas.context.setLineDash);
 
 canvas.draw();
