@@ -35,8 +35,10 @@ export default class Ring extends Shape {
     if (Math.abs(angle) >= 360) {
       ctx.beginPath();
       ctx.arc(x, y, outer,  0, Math.PI * 2, false);
-      ctx.arc(x, y, inner,  0, Math.PI * 2, true);
-      ctx.closePath();
+      if (inner > 0) {
+        ctx.arc(x, y, inner,  0, Math.PI * 2, true);
+        ctx.closePath();
+      }
     } else {
       const cw = angle > 0;
       const startX = x + Math.cos(startAngle) * outer;
@@ -46,8 +48,10 @@ export default class Ring extends Shape {
       ctx.beginPath();
       ctx.arc(x, y, outer,  startAngle, endAngle, !cw);
       ctx.lineTo(endX, endY);
-      ctx.arc(x, y, inner,  endAngle, startAngle, cw);
-      ctx.lineTo(startX, startY);
+      if (inner > 0) {
+        ctx.arc(x, y, inner,  endAngle, startAngle, cw);
+        ctx.lineTo(startX, startY);
+      }
       ctx.closePath();
     }
   }

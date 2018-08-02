@@ -50,17 +50,18 @@ export function assign (target, ...source) {
   if (source.length === 0) {
     return target;
   }
-  
   for ( let i = 0; i < source.length; i++ ) {
     const si = source[i];
+    // console.log(si);
     if (si == null || typeof si !== 'object') {
       break;
     }
     Object.keys(si).forEach(key => {
-     if (target[key] && typeof target[key] === 'object' && !Array.isArray(target[key])) {
-        target[key] = assign({}, target[key], si[key]);
+      const value = si[key];
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        target[key] = Object.assign ({}, target[key], value);
       } else {
-        target[key] = si[key];
+        target[key] = value;
       }
     });
   }

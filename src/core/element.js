@@ -222,7 +222,7 @@ export default class Element {
 
   _clear () {}
 
-  setAttrs(props) {
+  setAttrs = (props) => {
     // 改变属性后自动更新计算属性并将自己设为脏值状态表示在下一次绘画中需要重新绘制
     if (Utils.isEmpty(props) && this.type !== 'Video') {
       return ;
@@ -255,7 +255,7 @@ export default class Element {
     return this;
   }
 
-  setStyle(style) {
+  setStyle = (style) => {
     
     if (Utils.isEmpty(style)) {
       return ;
@@ -276,7 +276,7 @@ export default class Element {
     return this;
   }
 
-  setStatus(status) {
+  setStatus = (status) => {
     this._set('_status', status);
     if (status.dirty) {
       this._noticeParentStatus({dirty: true});
@@ -284,27 +284,27 @@ export default class Element {
     return this;
   }
 
-  getStatus() {
+  getStatus = () => {
     return this._status;
   }
 
-  getContext() {
+  getContext () {
     return this.container.getContext();
   }
 
-  getCanvas() {
+  getCanvas () {
     if (!this.canvas) {
       this.canvas = this.container.getCanvas();
     }
     return this.canvas;
   }
 
-  getOriginal (key) {
+  getOriginal = (key) => {
     const data = this.__original__[key];
     return data && Utils.cloneDeep(data);
   }
 
-  animate(cfg = {}) {
+  animate = (cfg = {}) => {
     const {
       props,
       duration,
@@ -344,7 +344,7 @@ export default class Element {
       from[key] = start;
       to[key] = props[key];
     });
-    Utils.assign(this.animateCfg, {
+    Object.assign(this.animateCfg, {
       duration,
       effect,
       status: 'ready',
@@ -384,7 +384,7 @@ export default class Element {
     return this;
   };
 
-  stop() {
+  stop = () => {
     this._stopAnimation(this.animateCfg.cb);
     return this;
   }
@@ -393,23 +393,23 @@ export default class Element {
     return true;
   }
 
-  update() {
+  update = () => {
     const canvas = this.getCanvas();
     canvas.update();
     return this;
   }
 
-  on(event, fun) {
+  on = (event, fun) => {
     const canvas = this.getCanvas();
     return canvas.on(event, fun, this);
   }
 
-  off(type, fun) {
+  off = (type, fun) => {
     const canvas = this.getCanvas();
     return canvas.off(type, fun, this);
   }
 
-  show () {
+  show = () => {
     if (!this.visible) {
       this.visible = true;
       this.update();
@@ -417,7 +417,7 @@ export default class Element {
     return this;
   }
 
-  hide () {
+  hide = () => {
     if (this.visible) {
       this.visible = false;
       this.update();
@@ -425,7 +425,7 @@ export default class Element {
     return this;
   }
 
-  destroy() {
+  destroy = () => {
     this._clear();
     const canvas = this.getCanvas();
     canvas.remove(this);

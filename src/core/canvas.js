@@ -95,7 +95,9 @@ export default class Canvas extends EventBus {
     const {x, y} = this._canvasPoint(e.clientX, e.clientY);
     const eventType = e.type;
     const subscribers = this.registeredElements[eventType];
-
+    // if (eventType === 'click') {
+    //   debugger;
+    // }
     const listenerIter = (arr) => {
       let out = [];
       if (!Array.isArray(arr)) {
