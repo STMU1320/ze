@@ -82,6 +82,7 @@ export default class Layer extends Element {
   _draw (ctx) {
     const { shapes, brush, palette, attrs, visible } = this;
     const { x, y } = attrs;
+    const status = this.getStatus();
     const parentStatus = this.container.getStatus();
     if (parentStatus.styleChanged) {
       this._initBrush();

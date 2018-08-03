@@ -40,6 +40,10 @@ export default class Shape extends Element {
           }
         } else {
           ctx[attr] = style[attr];
+          // if (this.type === 'Rect') {
+          //   console.log(attr, style[attr]);
+          //   console.log(ctx[attr]);
+          // }
         }
       });
       this._createPath(ctx);
