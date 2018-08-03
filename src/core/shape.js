@@ -11,7 +11,7 @@ export default class Shape extends Element {
 
   constructor (type, cfg = {}, container) {
     const defaultCfg = Utils.assign({},  { attrs: Shape.ATTRS }, cfg);
-    if (type === 'Line') {
+    if (['Line', 'Arc', 'Bezier'].includes(type)) {
       defaultCfg.attrs.hasFill = false;
       defaultCfg.attrs.hasStroke = true;
     }
@@ -19,6 +19,17 @@ export default class Shape extends Element {
   }
 
   _createPath () {
+  }
+
+  _getLineWidth () {
+    let lineWidth = this.style.lineWidth;
+    if (lineWidth == null) {
+      const heritage = this.container.getHeritage();
+      const parentStyle = this.container.style;
+      const pStyle = Object.assign({}, heritage.style, parentStyle);
+      lineWidth = pStyle.lineWidth == null ? 1 : pStyle.lineWidth;
+    }
+    return lineWidth;
   }
 
   _draw (ctx) {

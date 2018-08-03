@@ -6,5 +6,6 @@ export { default as ZImage } from './image';
 export { default as ZVideo } from './video';
 export { default as Polygon } from './polygon';
 export { default as Ring } from './ring';
+export { default as Arc } from './arc';
 
  

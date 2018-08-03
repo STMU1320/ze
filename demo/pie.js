@@ -53,21 +53,27 @@ const canvas = new ZE.Canvas('container', {
 });
 
 const infoLayer = canvas.addLayer({
-  visible: false,
+  // visible: false,
   zIndex: 9
   });
 infoLayer.addShape('rect', {
   attrs: {
     w: 100,
     h: 100,
+    x: 20,
+    y: 10,
     opacity: 0.6,
     radius: 5
+  },
+  style: {
+    shadowBlur: 10,
+    shadowColor: '#000000',
   }
 });
 const text = infoLayer.addShape('text', {
   attrs: {
-    x: 10,
-    y: 30,
+    x: 30,
+    y: 40,
     text: ['label: -', 'value: 0']
   },
   style: {
@@ -84,17 +90,25 @@ const ringLayer = canvas.addLayer({
     },
     mousemove: (e) => {
       infoLayer.setAttrs({
-        x: e.x + 20,
+        x: e.x,
         y: e.y
       }).update();
-      // infoLayer.animate({
-      //   props: {
-      //     x: e.x + 20,
-      //     y: e.y
-      //   },
-      //   duration: 100,
-      //   effect: 'easeIn'
-      // });
+      // const x = e.x + 20;
+      // const y = e.y;
+      // const l = Math.sqrt(
+      //   Math.pow(x - infoLayer.attrs.x, 2),
+      //   Math.pow(y - infoLayer.attrs.y, 2),
+      // );
+      // if (l > 20) {
+      //   infoLayer.animate({
+      //     props: {
+      //       x,
+      //       y
+      //     },
+      //     duration: 100,
+      //     effect: 'easeOut'
+      //   });
+      // }
     },
     mouseout () {
       canvas.element.style.cursor = 'auto';
@@ -129,7 +143,7 @@ data.forEach((item) => {
       delay: duration * percent - 10
     },
     style: {
-      fillStyle: item.color
+      fillStyle: item.color,
     },
     event: {
       mouseenter () {

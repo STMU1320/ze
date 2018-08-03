@@ -13,20 +13,21 @@ export default class Line extends Shape {
   }
 
   constructor (cfg, container) {
-    const defaultCfg = Utils.assign({}, { attrs: Line.ATTRS, style: { lineWidth: 1 } } ,cfg);
+    const defaultCfg = Utils.assign({}, { attrs: Line.ATTRS } ,cfg);
     super('Line', defaultCfg, container);
   }
 
   includes (x, y) {
-    const { x1, y1, x2, y2, lineWidth } = this.attrs;
+    const { x1, y1, x2, y2 } = this.attrs;
+    const lineWidth = this._getLineWidth();
     return Inside.line(x1, y1, x2, y2, lineWidth, x, y);
   }
   
   _createPath (ctx) {
     const { x1, y1, x2, y2 } = this.attrs;
-    const { lineWidth } = this.style;
+    const lineWidth = this._getLineWidth();
     if ((x1 === x2 && x1 % 1 === 0) || (y1 === y2 && y1 % 1 === 0)) {
-      if (lineWidth === 1) {
+      if ( lineWidth === 1) {
         ctx.translate(-0.5, -0.5);
       }
     }

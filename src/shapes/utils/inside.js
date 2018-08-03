@@ -6,12 +6,14 @@ const Vec = require('../math/vec');
 
 export default {
   line(x1, y1, x2, y2, lineWidth, x, y) {
-    const box = Line.box(x1, y1, x2, y2, lineWidth);
-
-    if (!this.box(box.minX, box.maxX, box.minY, box.maxY, x, y)) {
+    if (lineWidth <= 0) {
       return false;
     }
-
+    // debugger;
+    const box = Line.box(x1, y1, x2, y2, lineWidth);
+    if (!this.box(box.minX, box.minY, box.maxX, box.maxY, x, y)) {
+      return false;
+    }
     const d = Line.pointDistance(x1, y1, x2, y2, x, y);
     if (isNaN(d)) {
       return false;
@@ -43,6 +45,9 @@ export default {
     return Quadratic.pointDistance(x1, y1, x2, y2, x3, y3, x, y) <= lineWidth / 2;
   },
   arcline(cx, cy, r, startAngle, endAngle, clockwise, lineWidth, x, y) {
+    if (lineWidth === 0) {
+      return false;
+    }
     return Arc.pointDistance(cx, cy, r, startAngle, endAngle, clockwise, x, y) <= lineWidth / 2;
   },
   rect(rx, ry, width, height, x, y) {

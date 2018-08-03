@@ -193,6 +193,7 @@ export default class Element {
         status: 'stop',
         lastTime: now,
         passTime: duration,
+        current: {...to}
       });
       this._stopAnimation(callback);
     }
