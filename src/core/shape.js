@@ -11,10 +11,10 @@ export default class Shape extends Element {
 
   constructor (type, cfg = {}, container) {
     const defaultCfg = Utils.assign({},  { attrs: Shape.ATTRS }, cfg);
-    if (['Line', 'Arc', 'Bezier'].includes(type)) {
-      defaultCfg.attrs.hasFill = false;
-      defaultCfg.attrs.hasStroke = true;
-    }
+    // if (['Line', 'Arc', 'Bezier'].includes(type)) {
+    //   defaultCfg.attrs.hasFill = false;
+    //   defaultCfg.attrs.hasStroke = true;
+    // }
     super(container, type, defaultCfg);
   }
 

@@ -9,6 +9,8 @@ export default class Line extends Shape {
     y1: 0,
     x2: 0,
     y2: 10,
+    hasFill: false,
+    hasStroke: true,
     // dash: null
   }
 

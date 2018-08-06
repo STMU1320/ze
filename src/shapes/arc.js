@@ -9,7 +9,9 @@ export default class Arc extends Shape {
     y: 0,
     r: 10,
     start: 0,
-    angle: 0
+    angle: 0,
+    hasFill: false,
+    hasStroke: true
   }
 
   constructor (cfg, container) {

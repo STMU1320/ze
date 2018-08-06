@@ -30,4 +30,19 @@ canvas.addShape('arc', {
   }
 });
 
+canvas.addShape('bezier', {
+  attrs: {
+    p: [
+      { x: 0, y: 100 },
+      { x: 200, y: 200 },
+      { x: 400, y: 100 }
+    ]
+  },
+  event: {
+    click () {
+      console.log(this);
+    }
+  }
+});
+
 canvas.draw();
