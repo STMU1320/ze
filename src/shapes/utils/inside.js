@@ -36,7 +36,7 @@ export default {
       }
     }
 
-    return false;
+    return this.line(points[0][0], points[0][1], points[l][0], points[l][1], lineWidth, x, y);
   },
   cubicline(x1, y1, x2, y2, x3, y3, x4, y4, lineWidth, x, y) {
     return Cubic.pointDistance(x1, y1, x2, y2, x3, y3, x4, y4, x, y) <= lineWidth / 2;

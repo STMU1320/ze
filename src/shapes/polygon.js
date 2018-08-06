@@ -74,15 +74,21 @@ export default class Polygon extends Shape {
   }
 
   includes(clientX, clientY) {
-    let {minX, minY, maxX, maxY} = this.computed;
-    if (minX == null || minY == null || maxX == null || maxY == null) {
-      this._updateComputed();
-      minX = this.computed.minX;
-      minY = this.computed.minY;
-      maxX = this.computed.maxX;
-      maxY = this.computed.maxY;
+    const { hasFill, hasStroke, points } = this.attrs;
+    if (hasFill) {
+      let {minX, minY, maxX, maxY} = this.computed;
+      if (minX == null || minY == null || maxX == null || maxY == null) {
+        this._updateComputed();
+        minX = this.computed.minX;
+        minY = this.computed.minY;
+        maxX = this.computed.maxX;
+        maxY = this.computed.maxY;
+      }
+      return Inside.box(minX, minY, maxX, maxY, clientX, clientY);
+    } else if (hasStroke) {
+      const lineWidth = this._getLineWidth();
+      return Inside.polyline(points, lineWidth, clientX, clientY);
     }
-    return Inside.box(minX, minY, maxX, maxY, clientX, clientY);
   }
 
   _createPath(ctx) {

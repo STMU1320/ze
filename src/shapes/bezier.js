@@ -61,7 +61,7 @@ export default class Bezier extends Shape {
     ctx.beginPath();
     ctx.moveTo(p[0].x, p[0].y);
     if (type === 'quadratic') {
-      if (p.length < 4) {
+      if (p.length < 3) {
         throw '二次贝塞尔曲线必须有三个坐标点';
       }
       ctx.quadraticCurveTo(p[1].x, p[1].y, p[2].x, p[2].y);
@@ -71,5 +71,5 @@ export default class Bezier extends Shape {
       }
       ctx.bezierCurveTo(p[1].x, p[1].y, p[2].x, p[2].y, p[3].x, p[3].y);
     }
-}
+  }
 }         

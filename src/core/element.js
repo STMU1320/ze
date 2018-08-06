@@ -234,7 +234,7 @@ export default class Element {
       const value = props[key];
       if (key === 'fontSize') {
         style.font = ctx.font.replace(/(^|\s)(\d{1,}\.?\d*px)(\s|$)/ig, ` ${value}px `);
-      } else if (['fillStyle', 'strokeStyle'].includes(key)) {
+      } else if (['fillStyle', 'strokeStyle', 'lineDash'].includes(key)) {
         style[key] = value;
       } else {
         attrs[key] = value;
@@ -331,6 +331,9 @@ export default class Element {
     const diff = {};
     Object.keys(props).forEach(key => {
       let start = initAttrs[key];
+      if (start == null) {
+        start = style[key];
+      }
       if (['fillStyle', 'strokeStyle'].includes(key)) {
         start = style[key] || ctx[key];
         diff[key] = interpolateRgb(start, props[key]);
