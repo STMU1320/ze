@@ -1,75 +1,69 @@
-
 const canvas = new ZE.Canvas('container', {
-  width: 800,
-  height: 600,
+  width: 1000,
+  height: 800,
   style: {
-    strokeStyle: 'black',
-    lineWidth: 5
+    fillStyle: '#fff',
   }
 });
 
-canvas.addShape('arc', {
-  attrs: {
-    x: 300,
-    y: 300,
-    r: 50,
-    // angle: 180
-  },
-  animate: {
-    props: {
-      angle: 360
+for (let i = 0; i < 20; i++) {
+  const row = 0 | (i / 5);
+  const col = i % 5;
+  canvas.addShape('polygon', {
+    attrs: {
+      regular: true,
+      vertices: 3 + i,
+      r: 50,
+      x: 180 + col * 160,
+      y: 100 + row * 180
     },
-    duration: 600,
-    effect: 'easeOut'
-  },
-
-  event: {
-    click (e) {
-      console.log(e);
+    event: {
+      mouseenter (e) {
+        const target = e.target;
+        target.animate({
+          props: {
+            fillStyle: 'red',
+            r: 60,
+            angle: 360
+          },
+          duration: 800,
+          effect: 'easeOut',
+          callback: () => console.log('enter end')
+          // loop: true
+        });
+      },
+      mouseout (e) {
+        const target = e.target;
+        const { passTime } = target.animateCfg;
+        target.animate({
+          props: {
+            fillStyle: '#ffffff',
+            r: 50,
+            angle: 0
+          },
+          duration: passTime,
+          effect: 'easeIn',
+          callback: () => console.log('out end')
+        });
+      }
     }
-  }
-});
-
-canvas.addShape('bezier', {
-  attrs: {
-    p: [
-      { x: 0, y: 100 },
-      { x: 200, y: 200 },
-      { x: 400, y: 100 }
-    ]
-  },
-  style: {
-    lineDash: [0, 400]
-  },
-  animate: {
-    props: {
-      lineDash: [400, 400]
+  });
+  canvas.addShape('text', {
+    attrs: {
+      text: `${3 + i} vertex`,
+      x: 180 + col * 160,
+      y: 170 + row * 180
     },
-    duration: 6000,
-    effect: 'easeOut'
-  },
-  event: {
-    click () {
-      console.log(this);
+    style: {
+      textAlign: 'center'
+    },
+    event: {
+      click: (e) => console.log(e.target.attrs.text)
     }
-  }
-});
+  });
+}
 
-canvas.addShape('polygon', {
-  attrs: {
-    hasFill: false,
-    hasStroke: true,
-    regular: true,
-    vertices: 3,
-    x: 500,
-    y: 500,
-    r: 50
-  },
-  event: {
-    click () {
-      console.log('p');
-    }
-  }
-});
+const ctx = canvas.getContext();
+ctx.canvas.style.background = '#333';
 
 canvas.draw();

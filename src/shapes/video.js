@@ -45,6 +45,7 @@ export default class ZVideo extends Shape {
     document.body.appendChild(script);
     script.onload = () => {
       const hls = new Hls();
+      // console.log(video);
       hls.loadSource(video.getAttribute('src'));
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED,() => {

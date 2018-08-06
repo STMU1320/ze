@@ -53,7 +53,7 @@ const canvas = new ZE.Canvas('container', {
 });
 
 const infoLayer = canvas.addLayer({
-  // visible: false,
+  visible: false,
   zIndex: 9
   });
 infoLayer.addShape('rect', {

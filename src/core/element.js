@@ -209,7 +209,7 @@ export default class Element {
     if (!this[key]) {
       this[key] = value;
     } else {
-      Utils.assign(this[key], value);
+      Object.assign(this[key], value);
     }
   }
 
@@ -223,7 +223,7 @@ export default class Element {
 
   _clear () {}
 
-  setAttrs = (props) => {
+  setAttrs (props) {
     // 改变属性后自动更新计算属性并将自己设为脏值状态表示在下一次绘画中需要重新绘制
     if (Utils.isEmpty(props) && this.type !== 'Video') {
       return ;
@@ -256,7 +256,7 @@ export default class Element {
     return this;
   }
 
-  setStyle = (style) => {
+  setStyle (style) {
     
     if (Utils.isEmpty(style)) {
       return ;
@@ -270,14 +270,14 @@ export default class Element {
     // }
     const parentHrt = this.container.getHeritage();
     const parentStyle = parentHrt.style;
-    this._setHeritage({ style: Utils.assign({}, parentStyle, style) });
+    this._setHeritage({ style: Object.assign({}, parentStyle, style) });
     if (keys.includes('lineWidth') || keys.includes('font')) {
       this._updateComputed();
     }
     return this;
   }
 
-  setStatus = (status) => {
+  setStatus (status) {
     this._set('_status', status);
     if (status.dirty) {
       this._noticeParentStatus({dirty: true});
@@ -416,6 +416,7 @@ export default class Element {
   show = () => {
     if (!this.visible) {
       this.visible = true;
+      this.setStatus({ dirty: true });
       this.update();
     }
     return this;
@@ -424,6 +425,7 @@ export default class Element {
   hide = () => {
     if (this.visible) {
       this.visible = false;
+      this.setStatus({ dirty: true });
       this.update();
     }
     return this;
