@@ -65,6 +65,7 @@ export default class Shape extends Element {
         ctx.fill();
       }
       ctx.restore();
+      this.setStatus({ drawn: true, dirty: false });
     }
   }
 

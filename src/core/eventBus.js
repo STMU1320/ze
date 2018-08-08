@@ -66,10 +66,17 @@ export default class EventBus {
 
   _clearEvent (elements) {
     const { registeredElements, events } = this;
+    let rmEvents = [];
+    if (elements == null) {
+      rmEvents = events;
+      this.events = {};
+      this.registeredElements = {};
+      this._lastTrigger = [];
+      return rmEvents;
+    }
     if (!Array.isArray(elements)) {
       elements = [elements];
     }
-    const rmEvents = [];
     elements.forEach(element => {
       for (let key in events) {
         const temp = Utils.remove(events[key], event => event.element === element);

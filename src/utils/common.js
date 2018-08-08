@@ -54,7 +54,7 @@ export function assign (target, ...source) {
     const si = source[i];
     // console.log(si);
     if (si == null || typeof si !== 'object') {
-      break;
+      continue;
     }
     Object.keys(si).forEach(key => {
       const value = si[key];

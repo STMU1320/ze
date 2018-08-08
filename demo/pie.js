@@ -116,6 +116,7 @@ const ringLayer = canvas.addLayer({
     }
   }
 });
+ringLayer.boxTrigger(false);
 
 
 const total = data.reduce((pre, item) => pre += item.value, 0);

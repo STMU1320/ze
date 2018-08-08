@@ -83,7 +83,10 @@ const infoText = infoModal.addShape('text', {
 });
 const layer = canvas.addLayer({
   attrs: {
-    x: startX
+    x: startX,
+    y: padding,
+    width: innerWidth,
+    height: innerHeight
   },
   style: {
     fillStyle: '#6fbae1'
@@ -208,14 +211,14 @@ function draw (data) {
       layer.addShape('rect', {
         attrs: {
           x: positionX - (rectWidth / 2),
-          y: startY,
+          y: innerHeight,
           h: 0,
           w: rectWidth
         },
         zIndex: 2,
         animate: {
           props: {
-            y: startY - rectHeight,
+            y: innerHeight - rectHeight,
             h: rectHeight
           },
           duration: 600,
@@ -233,7 +236,7 @@ function draw (data) {
       layer.addShape('rect', {
         attrs: {
           x: itemWidth * index,
-          y: padding,
+          y: 0,
           h: innerHeight,
           w: itemWidth,
           opacity: 0.05

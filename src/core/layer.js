@@ -7,17 +7,19 @@ export default class Layer extends Element {
   static ATTRS = {
     x: 0,
     y: 0,
+    width: void(0),
+    height: void(0),
     opacity: 1
   }
 
   constructor (cfg = {}, container) {
     const defaultCfg = Utils.assign({},  { attrs: Layer.ATTRS }, cfg);
     super(container, 'Layer', defaultCfg);
-    this._status = Utils.assign(this._status);
+    this._boxTrigger = true;
     this.shapes = [];
+    this._initPalette();
     // 计算图层相对于canvas坐标原点的偏移量
     this._updateComputed();
-    this._initPalette();
   }
 
   _insertElement (ele) {
@@ -63,14 +65,21 @@ export default class Layer extends Element {
   }
 
   _updateComputed () {
-    const { attrs, container, shapes } = this;
-    let offsetX = attrs.x,
-        offsetY = attrs.y;
+    const { attrs, container, shapes, palette } = this;
+    let { x, y, width, height} = attrs;
+    let offsetX = x,
+        offsetY = y;
     if (container.type === 'Layer') {
       offsetX += container.computed.offsetX;
       offsetY += container.computed.offsetY;
     }
-    Utils.assign(this.computed, { offsetX, offsetY });
+    const box = {
+      minX: offsetX,
+      minY: offsetY,
+      maxX: width ? offsetX + width : palette.width,
+      maxY: height ? offsetY + height : palette.height
+    };
+    Utils.assign(this.computed, { offsetX, offsetY, box });
     // 更新图层的偏移量，应该有更好的实现机制
     shapes.forEach(shape => {
       if (shape.type === 'Layer') {
@@ -107,6 +116,10 @@ export default class Layer extends Element {
   }
 
   includes (clientX, clientY) {
+    if (this._boxTrigger) {
+      const { box } = this.computed;
+      return clientX >= box.minX && clientX <= box.maxX && clientY >= box.minY && clientY <= box.maxY;
+    }
     const shapes = this.shapes;
     const { x, y } = this.attrs;
     if (clientX >= x && clientY >= y) {
@@ -114,7 +127,6 @@ export default class Layer extends Element {
         return shapes.some(shape => shape.includes(clientX - x, clientY - y));
       }
     }
-
     return false;
   }
 
@@ -166,6 +178,16 @@ export default class Layer extends Element {
       canvas.emit('@@clear', { shapes: rmShape });
     }
     return rmShape;
+  }
+
+  boxTrigger (value) {
+    this._boxTrigger = !!value;
+    return this;
+  }
+
+  clear () {
+    this.shapes = [];
+    return this;
   }
 
 }

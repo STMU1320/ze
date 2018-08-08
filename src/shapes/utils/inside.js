@@ -20,7 +20,7 @@ export default {
     }
     return d <= lineWidth / 2;
   },
-  polyline(points, lineWidth, x, y) {
+  polyline(points, lineWidth, close, x, y) {
     const l = points.length - 1;
     if (l < 1) {
       return false;
@@ -36,7 +36,7 @@ export default {
       }
     }
 
-    return this.line(points[0][0], points[0][1], points[l][0], points[l][1], lineWidth, x, y);
+    return close ? this.line(points[0][0], points[0][1], points[l][0], points[l][1], lineWidth, x, y) : false;
   },
   cubicline(x1, y1, x2, y2, x3, y3, x4, y4, lineWidth, x, y) {
     return Cubic.pointDistance(x1, y1, x2, y2, x3, y3, x4, y4, x, y) <= lineWidth / 2;

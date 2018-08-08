@@ -258,8 +258,19 @@ export default class Canvas extends EventBus {
   }
 
   clear() {
-    const {element} = this;
-    this.context.clearRect(0, 0, element.width, element.height);
+    const { element, timer, context } = this;
+    if (timer) {
+      cancelAnimationFrame(timer);
+      this.timer = null;
+    }
+    context.clearRect(0, 0, element.width, element.height);
+    this.layers = [];
+    this.computed = {shapeLength: 0, layerLength: 0, animate: 0};
+    this._status = {drawn: false, dirty: false};
+    this._clearEvent();
+    this._initEvent();
+    this._initBackground();
+    this._initDrawInfo();
   }
 
   update() {
@@ -270,11 +281,11 @@ export default class Canvas extends EventBus {
   }
 
   _draw = () => {
-    const ctx = this.context;
-    const layers = this.layers;
+    const { element, layers, context } = this;
+    const ctx = context;
     const status = this.getStatus();
     this._updateDrawInfo();
-    this.clear();
+    ctx.clearRect(0, 0, element.width, element.height);
     layers.forEach(layer => {
       layer._draw(ctx);
     });

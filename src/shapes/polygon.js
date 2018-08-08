@@ -87,7 +87,7 @@ export default class Polygon extends Shape {
       return Inside.box(minX, minY, maxX, maxY, clientX, clientY);
     } else if (hasStroke) {
       const lineWidth = this._getLineWidth();
-      return Inside.polyline(points, lineWidth, clientX, clientY);
+      return Inside.polyline(points, lineWidth, true, clientX, clientY);
     }
   }
 
