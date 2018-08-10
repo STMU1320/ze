@@ -8,5 +8,6 @@ export { default as Polygon } from './polygon';
 export { default as Ring } from './ring';
 export { default as Arc } from './arc';
 export { default as Bezier } from './bezier';
+export { default as Polyline } from './Polyline';
 
  

@@ -298,6 +298,29 @@ const kLineData = {
   name: '\u6df1\u8bc1\u6210\u6307',
 };
 
+// 计算5日和十日平均值
+let fiveStart = 0, tenStart = 0, fiveTotal = 0, tenTotal = 0;
+const data = kLineData.data;
+kLineData.data.forEach((item, index, arr) => {
+  const closePrice = item[1];
+  fiveTotal += closePrice;
+  tenTotal += closePrice;
+  let fiveAver = null, tenAver = null;
+  if (index > 3) {
+    fiveTotal -= fiveStart;
+    fiveAver = fiveTotal / 5;
+    fiveStart = arr[index - 4][1];
+  }
+  if (index > 8) {
+    tenTotal -= tenStart;
+    tenAver = tenTotal / 10;
+    tenStart = arr[index - 9][1];
+  }
+  const lastIndex = Math.max(index - 1, 0);
+  data[lastIndex][7] = fiveAver;
+  data[lastIndex][8] = tenAver;
+});
+
 function clamp(value, min, max) {
   if (value < min) {
     value = min;
@@ -327,7 +350,7 @@ const canvas = new ZE.Canvas('container', {
 
 // 数据信息展示框
 const infoRectW = 150;
-const infoRectH = 150;
+const infoRectH = 180;
 const infoPadding = 20;
 const infoWidth = infoRectW + infoPadding * 2;
 const infoHeight = infoRectH + infoPadding * 2;
@@ -356,7 +379,7 @@ function initLayers() {
     attrs: {
       x: infoPadding * 2,
       y: infoPadding * 2,
-      text: ['日期: -', '开盘: 0', '收盘: 0', '最高: 0', '最低: 0', '涨跌比: 0%'],
+      text: ['日期: -', '开盘: 0', '收盘: 0', '最高: 0', '最低: 0', '涨跌比: 0%', '5日均值：-', '10日均值: -'],
     },
     style: {
       fillStyle: 'white',
@@ -526,6 +549,7 @@ function drawCandle(max, min, dayStep, data) {
   const stepCenter = dayStep / 2;
   const candleWidth = dayStep * 0.8;
   candleLayer.value = { max, min, ratio };
+  const fivePoints = [], tenPoints = [];
   data.forEach((item, index) => {
     const isUp = item[6] > 0;
     const styleColor = isUp ? upStyle : downStyle;
@@ -533,10 +557,18 @@ function drawCandle(max, min, dayStep, data) {
     const close = item[2];
     const height = item[3];
     const low = item[4];
+    const fiveAver = item[7];
+    const tenAver = item[8];
 
     const startY = contentHeight - (Math.max(close, open) - min) * ratio;
     const h = Math.abs(close - open);
     const positionX = stepCenter + dayStep * index;
+    if (fiveAver != null) {
+      fivePoints.push([positionX, contentHeight - (fiveAver - min) * ratio]);
+    }
+    if (tenAver != null) {
+      tenPoints.push([positionX, contentHeight - (tenAver - min) * ratio]);
+    }
 
     candleLayer.addShape('rect', {
       attrs: {
@@ -597,6 +629,8 @@ function drawCandle(max, min, dayStep, data) {
               `最高: ${height}`,
               `最低: ${low}`,
               `涨跌比: ${item[6]}%`,
+              `5日均值：${item[7] == null ? '-' : (0 | item[7])}`,
+              `10日均值: ${item[8] == null ? '-' : (0 | item[8])}`
             ],
           });
         },
@@ -607,6 +641,22 @@ function drawCandle(max, min, dayStep, data) {
     });
 
     triggerRect.assoc = dayLine;
+  });
+
+  candleLayer.addShape('polyline', {
+    attrs: {
+      points: fivePoints
+    },
+    zIndex: 5
+  });
+  candleLayer.addShape('polyline', {
+    attrs: {
+      points: tenPoints
+    },
+    zIndex: 6,
+    style: {
+      strokeStyle: 'yellow'
+    }
   });
 }
 
@@ -632,10 +682,10 @@ function draw(data) {
 }
 
 function getData(start, end) {
-  const length = kLineData.data.length;
+  const length = data.length;
   start = Math.round(start * length);
   end = Math.round(end * length);
-  return kLineData.data.slice(start, end);
+  return data.slice(start, end);
 }
 
 draw(getData(0, 0.2));

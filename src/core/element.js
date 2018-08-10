@@ -1,7 +1,7 @@
 // 暂时把所有图形的事件都挂在canvas实列下，注册事件的图形过多后可能会对性能有影响.
 // import EventBus from './eventBus';
 import Utils from 'utils';
-import animate from './animate';
+import tween from './tween';
 import {interpolate, interpolateNumber, interpolateRgb} from 'd3-interpolate';
 
 const STYLE_KEYS = [
@@ -163,7 +163,7 @@ export default class Element {
       return setTimeout(this._playAnimation, -passTime);
     } else if (passTime < duration) {
       const baseRatio = passTime / duration;
-      const ratio = animate[effect](baseRatio);
+      const ratio = tween[effect](baseRatio);
       const nextProps = {};
       Object.keys(diff).forEach(key => {
         nextProps[key] = diff[key](ratio);
