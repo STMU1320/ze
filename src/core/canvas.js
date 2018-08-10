@@ -72,6 +72,7 @@ export default class Canvas extends EventBus {
     this.element.addEventListener('mousedown', this._eventHandle, false);
     this.element.addEventListener('mouseup', this._eventHandle, false);
     this.element.addEventListener('mousemove', this._eventHandle, false);
+    this.element.addEventListener('mouseout', this._eventHandle, false);
     // this.on('@@update', this.update);
     this.on('@@change', this._contentChange);
     this.on('@@clear', this._clearEventAsync);
@@ -93,7 +94,10 @@ export default class Canvas extends EventBus {
 
   _eventHandle = e => {
     const {x, y} = this._canvasPoint(e.clientX, e.clientY);
-    const eventType = e.type;
+    let eventType = e.type;
+    if (eventType === 'mouseout') {
+      eventType = 'mousemove';
+    }
     const subscribers = this.registeredElements[eventType];
     // if (eventType === 'click') {
     //   debugger;

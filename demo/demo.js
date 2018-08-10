@@ -1,3 +1,52 @@
+const style = `
+.progress {
+  position: relative;
+  height: 20px;
+  margin: 20px 0;
+  padding: 1px;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  box-sizing: content-box;
+}
+.slider {
+  position: absolute;
+  top: 2px;
+  left: 0px;
+  height: 16px;
+  width: 48px;
+  background: linear-gradient(#eee, #fff, #eee);
+  border: 1px solid #d6d6d6;
+  border-radius: 2px;
+  box-shadow: 0px 2px 2px 0px #00000014;
+  cursor: pointer;
+}
+
+.slider::before, .slider::after {
+  content: ' ';
+  display: block;
+  position: absolute;
+  top: 1px;
+  width: 2px;
+  height: 12px;
+  border-radius: 2px;
+  background: #eee;
+  border: 1px solid #ccc;
+}
+.slider::before {
+  left: 25%;
+}
+.slider::after {
+  right: 25%;
+}`;
+
+const head = document.getElementsByTagName('head')[0];
+const styleEle = document.createElement('style');
+styleEle.innerHTML = style;
+head.appendChild(styleEle);
+
+// 以上生成样式
+
 const kLineData = {
   data: [
     ['20170103', 10205.14, 10261.09, 10275.13, 10205.14, 18614365164, 0.82],
@@ -562,6 +611,7 @@ function drawCandle(max, min, dayStep, data) {
 }
 
 function draw(data) {
+  canvas.clear();
   let max = -Infinity, min = Infinity;
   data.forEach(item => {
     if (item[3] > max) {
@@ -581,19 +631,65 @@ function draw(data) {
   canvas.draw();
 }
 
-function getData(length) {
-  return kLineData.data.slice(0, length);
+function getData(start, end) {
+  const length = kLineData.data.length;
+  start = Math.round(start * length);
+  end = Math.round(end * length);
+  return kLineData.data.slice(start, end);
 }
 
-let length = 100;
-draw(getData(length));
+draw(getData(0, 0.2));
+// 滑块部分
+function initSlider (width, sliderScale, onChange) {
+  const progressEle = document.createElement('div');
+  const slider = document.createElement('div');
+  const box = progressEle.getBoundingClientRect();
+  const sliderWidth = 0 | (width * sliderScale);
+  let mousedown = false;
+  let start = { x: 0, diff: 0, left: 0 };
+  progressEle.className = 'progress';
+  progressEle.style.width = `${width}px`;
+  slider.className = 'slider';
+  slider.style.width = `${sliderWidth}px`;
+  function downHandle (e) {
+    const sliderBox = slider.getBoundingClientRect();
+    start = { x: e.x, diff: e.x - sliderBox.left, left: sliderBox.left };
+    mousedown = true;
+    document.addEventListener('mousemove', moveHandle, false);
+    e.stopPropagation();
+    e.preventDefault();
+  }
 
-// let timer = setInterval(() => {
-//   if (length < kLineData.data.length) {
-//     length += 10;
-//     canvas.clear();
-//     draw(getData(length));
-//   } else {
-//     clearInterval(timer);
-//   }
-// }, 3000);
+  function upHandle () {
+    if (mousedown) {
+      mousedown = false;
+      start = { x: 0, diff: 0, left: 0 };
+      document.removeEventListener('mousemove', moveHandle);
+    }
+  }
+
+  function moveHandle (e) {
+    if (mousedown) {
+      const diffX = e.x - start.x;
+      const progress = clamp(start.left - box.left + diffX, 0, width - sliderWidth);
+     //  console.log(progress);
+      // hightLight.style.width = `${progress}px`;
+      slider.style.left = `${progress}px`;
+      const startScale = progress / width;
+      const data = { start: startScale, end: startScale + sliderScale };
+      onChange && onChange(data);
+    }
+  }
+
+  slider.addEventListener('mousedown', downHandle, false);
+
+  document.addEventListener('mouseup', upHandle, false);
+  progressEle.appendChild(slider);
+  document.body.appendChild(progressEle);
+}
+
+function sliderChange (value) {
+  draw(getData(value.start, value.end));
+}
+
+initSlider(width, 0.2, sliderChange);
