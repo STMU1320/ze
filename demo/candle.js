@@ -354,7 +354,7 @@ const infoRectH = 180;
 const infoPadding = 20;
 const infoWidth = infoRectW + infoPadding * 2;
 const infoHeight = infoRectH + infoPadding * 2;
-let infoLayer, infoText, candleLayer, horizontally, horText;
+let infoLayer, infoText, candleLayer, horizontally, horText, dayLine;
 
 function initLayers() {
   // 信息窗
@@ -462,6 +462,21 @@ function initLayers() {
   });
   candleLayer.boxTrigger(false);
 
+  dayLine = candleLayer.addShape('line', {
+    attrs: {
+      x1: 0,
+      y1: contentHeight,
+      x2: 0,
+      y2: 0
+    },
+    zIndex: 9,
+    visible: false,
+    style: {
+      strokeStyle: '#ffe065',
+    },
+  });
+  candleLayer.on('mouseenter', () => {  dayLine.show();  });
+  candleLayer.on('mouseout', () => {  dayLine.hide();  });
 }
 
 function drawAxis(max, min, dayStep, data) {
@@ -595,23 +610,9 @@ function drawCandle(max, min, dayStep, data) {
       },
     });
 
-    const dayLine = candleLayer.addShape('line', {
+    candleLayer.addShape('rect', {
       attrs: {
-        x1: positionX,
-        y1: contentHeight,
-        x2: positionX,
-        y2: 0
-      },
-      zIndex: 9,
-      visible: false,
-      style: {
-        strokeStyle: '#ffe065',
-      },
-    });
-
-    const triggerRect = candleLayer.addShape('rect', {
-      attrs: {
-        x: positionX,
+        x: positionX - dayStep / 2,
         y: 0,
         w: dayStep,
         h: contentHeight,
@@ -620,7 +621,9 @@ function drawCandle(max, min, dayStep, data) {
       visible: false,
       event: {
         mouseenter() {
-          this.assoc.show();
+          const { x, w } = this.attrs;
+          const lineX = x + w / 2;
+          dayLine.setAttrs({ x1: lineX, x2: lineX });
           infoText.setAttrs({
             text: [
               `日期: ${item[0]}`,
@@ -634,13 +637,12 @@ function drawCandle(max, min, dayStep, data) {
             ],
           });
         },
-        mouseout() {
-          this.assoc.hide();
-        },
+        // mouseout() {
+        //   dayLine.hide();
+        // },
       },
     });
 
-    triggerRect.assoc = dayLine;
   });
 
   candleLayer.addShape('polyline', {
