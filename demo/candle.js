@@ -672,6 +672,12 @@ function draw(data) {
     if (min > item[4]) {
       min = item[4];
     }
+    if (item[7] && min > item[7]) {
+      min = item[7];
+    }
+    if (item[8] && min > item[8]) {
+      min = item[8];
+    }
   });
   max = Math.ceil(max / 10) * 10;
   min = Math.floor(min / 10) * 10;

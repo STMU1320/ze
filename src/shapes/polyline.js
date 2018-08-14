@@ -1,12 +1,15 @@
 import Shape from '../core/shape';
 import Utils from 'utils';
 import Inside from './utils/inside';
-import Smooth from './math/smooth';
+import * as Cubic from './math/cubic';
+import * as Vec2 from 'gl-matrix/src/gl-matrix/vec2';
+import * as Helper from './math/polyline';
 export default class Polyline extends Shape {
   static ATTRS = {
     close: false,
     points: [],
     smooth: 0,
+    t: 1,
     hasFill: false,
     hasStroke: true,
   };
@@ -14,10 +17,49 @@ export default class Polyline extends Shape {
   constructor(cfg, container) {
     const defaultCfg = Utils.assign({}, {attrs: Polyline.ATTRS}, cfg);
     super('Polyline', defaultCfg, container);
-    const { smooth, points } = this.attrs;
+    const { smooth, points, t } = this.attrs;
     if (smooth) {
-      this._cps = Smooth(points, smooth);
+      this._cps = Helper.smooth(points, smooth);
     }
+    // 这个方法不仅计算折线的总长度，还会将每个节点的长度存放到每个节点的索引2上(point[2])
+    const distances = Helper.distances(points, this._cps, smooth);
+    const computed = { distances };
+    if (t !== 1) {
+      computed.position = this._getCurrentPosition(t, distances);
+    }
+    Utils.assign(this.computed, computed);
+  }
+
+  _getCurrentPosition (t, distances) {
+    const { points, smooth } = this.attrs;
+    const cps = this._cps;
+    const currentDis = distances * t;
+    const index = points.findIndex((item) => item[2] >= currentDis);
+    const prevIndex = index - 1;
+    let position = [0, 0];
+    if (prevIndex > -1) {
+      const prevPoint = points[prevIndex];
+      const currentPoint = points[index];
+      const mod = prevPoint[2] ? currentDis % prevPoint[2] : currentDis;
+      const betweenDis = currentPoint[2] - prevPoint[2];
+      let _t = mod / betweenDis;
+
+      if (smooth && !Utils.isEmpty(cps)) {
+        // to do 贝塞尔曲线的运动位置需要做匀速化优化
+        const cp1 = cps[prevIndex * 2];
+        const cp2 = cps[prevIndex * 2 + 1];
+        position = [
+          Cubic.at(currentPoint[0], cp1[0], cp2[0], prevPoint[0], _t),
+          Cubic.at(currentPoint[1], cp1[1], cp2[1], prevPoint[1], _t)
+        ];
+      } else {
+        Vec2.lerp(position, prevPoint, currentPoint, _t);
+      }
+    } else {
+      position = [points[0][0], points[0][1]];
+    }
+
+    return position;
   }
 
   _updateComputed() {
@@ -40,36 +82,36 @@ export default class Polyline extends Shape {
     Utils.assign(this.computed, {minX, minY, maxX, maxY});
   }
 
-  // setAttrs(props) {
-  //   let {r, vertices, x, y, angle, regular} = this.attrs;
-  //   if (regular) {
-  //     if (
-  //       'r' in props ||
-  //       'x' in props ||
-  //       'y' in props ||
-  //       'angle' in props ||
-  //       'vertices' in props) {
-  //         r = Utils.isEmpty(props.r) ? r : props.r;
-  //         vertices = props.vertices != null ? Utils.clamp(Math.round(props.vertices), 3, 100) : vertices;
-  //         x = Utils.isEmpty(props.x) ? x : props.x;
-  //         y = Utils.isEmpty(props.y) ? y : props.y;
-  //         angle = Utils.isEmpty(props.angle) ? angle : props.angle;
-  //         const points = generatePoints({r, x, y, vertices, angle});
-  //         props.points = points;
-  //     }
-  //   }
-  //   super.setAttrs(props);
-  // }
+  setAttrs(props) {
+    const { t } = this.attrs;
+    if ('t' in props) {
+      const _t = props.t;
+      const { distances } = this.computed;
+      if (_t !== t) {
+        const position = this._getCurrentPosition(_t, distances);
+        Utils.assign(this.computed, { position });
+      }
+    }
+    super.setAttrs(props);
+  }
 
   includes(clientX, clientY) {
-    const { close, points } = this.attrs;
+    const { close, points, smooth } = this.attrs;
     const lineWidth = this._getLineWidth();
+    if (smooth && !Utils.isEmpty(this._cps)) {
+      const cps = this._cps;
+      return Inside.polyBezier(points, cps, lineWidth, close, clientX, clientY);
+    }
     return Inside.polyline(points, lineWidth, close, clientX, clientY);
   }
 
   _createPath(ctx) {
-    const {points, close, smooth} = this.attrs;
+    const {points, close, smooth, t } = this.attrs;
+    const { distances } = this.computed;
     const cps = this._cps;
+    if (t !== 1 && ctx.setLineDash) {
+      ctx.setLineDash([ distances * t, distances]);
+    }
     if (points.length) {
       ctx.beginPath();
       ctx.moveTo(points[0][0], points[0][1]);

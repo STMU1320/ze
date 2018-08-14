@@ -154,6 +154,7 @@ export default class Element {
       from,
       effect,
       callback,
+      frameEnd,
       repeat,
       loop
     } = this.animateCfg;
@@ -170,9 +171,11 @@ export default class Element {
       });
       this.setAttrs(nextProps);
       Utils.assign(this.animateCfg, {status: 'playing', lastTime: now, current: nextProps, passTime });
+      frameEnd && frameEnd(this);
       this.timer = requestAnimationFrame(this._playAnimation);
     } else if (loop) {
       this.setAttrs(to);
+      frameEnd && frameEnd(this);
       this.animate({
         props: from,
         loop,
@@ -181,6 +184,7 @@ export default class Element {
       });
     } else if (repeat) {
       this.setAttrs(from);
+      frameEnd && frameEnd(this);
       Utils.assign(this.animateCfg, {
         status: 'playing',
         lastTime: now,
@@ -189,6 +193,7 @@ export default class Element {
       this.timer = requestAnimationFrame(this._playAnimation);
     } else {
       this.setAttrs(to);
+      frameEnd && frameEnd(this);
       Utils.assign(this.animateCfg, {
         status: 'stop',
         lastTime: now,
@@ -311,10 +316,12 @@ export default class Element {
       duration,
       effect = 'linear',
       callback,
+      frameEnd,
       delay = 0,
       repeat,
       loop,
       autoPlay = true,
+
     } = cfg;
     if (!props || !duration) {
       return;
@@ -357,6 +364,7 @@ export default class Element {
       current: from,
       diff,
       callback,
+      frameEnd,
       delay,
       repeat,
       passTime: 0,

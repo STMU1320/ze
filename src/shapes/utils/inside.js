@@ -38,6 +38,24 @@ export default {
 
     return close ? this.line(points[0][0], points[0][1], points[l][0], points[l][1], lineWidth, x, y) : false;
   },
+  polyBezier (points, cps, lineWidth, close, x, y) {
+    const len = points.length;
+    if (len < 1) {
+      return false;
+    }
+
+    for (let i = 0; i < len - 1; i++) {
+      const current = points[i];
+      const next = points[i + 1];
+      const cp1 = cps[i * 2];
+      const cp2 = cps[i * 2 + 1];
+      if (this.cubicline(current[0], current[1], cp1[0], cp1[1], cp2[0], cp2[1], next[0], next[1], lineWidth, x, y)) {
+        return true;
+      }
+    }
+
+    return false;
+  },
   cubicline(x1, y1, x2, y2, x3, y3, x4, y4, lineWidth, x, y) {
     return Cubic.pointDistance(x1, y1, x2, y2, x3, y3, x4, y4, x, y) <= lineWidth / 2;
   },

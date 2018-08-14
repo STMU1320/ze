@@ -16,7 +16,11 @@ export default class Circle extends Shape {
   }
 
   includes (clientX, clientY) {
-    const { x, y, r } = this.attrs;
+    let { x, y, r, hasStroke } = this.attrs;
+    if (hasStroke) {
+      const lineWidth = this._getLineWidth();
+      r += (lineWidth / 2);
+    }
     return Inside.circle(x, y, r, clientX, clientY);
   }
   
