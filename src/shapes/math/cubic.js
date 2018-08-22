@@ -1,16 +1,19 @@
 const Util = require('../../utils/index').default;
 const vec2 = require('../../utils/matrix').vec2;
 
-function cubicAt(p0, p1, p2, p3, t) {
+const EPSILON = 0.0001;
+
+function cubicAt(p3, p2, p1, p0, t) {
   const onet = 1 - t;
-  return onet * onet * (onet * p3 + 3 * t * p2) + t * t * (t * p0 + 3 * onet * p1);
+  return (
+    onet * onet * (onet * p3 + 3 * t * p2) + t * t * (t * p0 + 3 * onet * p1)
+  );
 }
 
 function cubicDerivativeAt(p0, p1, p2, p3, t) {
   const onet = 1 - t;
-  return 3 * (
-    ((p1 - p0) * onet + 2 * (p2 - p1) * t) * onet +
-    (p3 - p2) * t * t
+  return (
+    3 * (((p1 - p0) * onet + 2 * (p2 - p1) * t) * onet + (p3 - p2) * t * t)
   );
 }
 
@@ -25,14 +28,10 @@ function cubicProjectPoint(x1, y1, x2, y2, x3, y3, x4, y4, x, y, out) {
   let v2;
   let prev;
   let next;
-  const EPSILON = 0.0001;
-  const v0 = [ x, y ];
+  const v0 = [x, y];
 
   for (_t = 0; _t < 1; _t += 0.05) {
-    v1 = [
-      cubicAt(x1, x2, x3, x4, _t),
-      cubicAt(y1, y2, y3, y4, _t)
-    ];
+    v1 = [cubicAt(x1, x2, x3, x4, _t), cubicAt(y1, y2, y3, y4, _t)];
 
     d1 = vec2.squaredDistance(v0, v1);
     if (d1 < d) {
@@ -50,22 +49,15 @@ function cubicProjectPoint(x1, y1, x2, y2, x3, y3, x4, y4, x, y, out) {
     prev = t - interval;
     next = t + interval;
 
-    v1 = [
-      cubicAt(x1, x2, x3, x4, prev),
-      cubicAt(y1, y2, y3, y4, prev)
-    ];
+    v1 = [cubicAt(x1, x2, x3, x4, prev), cubicAt(y1, y2, y3, y4, prev)];
 
     d1 = vec2.squaredDistance(v0, v1);
-
 
     if (prev >= 0 && d1 < d) {
       t = prev;
       d = d1;
     } else {
-      v2 = [
-        cubicAt(x1, x2, x3, x4, next),
-        cubicAt(y1, y2, y3, y4, next)
-      ];
+      v2 = [cubicAt(x1, x2, x3, x4, next), cubicAt(y1, y2, y3, y4, next)];
 
       d2 = vec2.squaredDistance(v0, v2);
 
@@ -121,7 +113,7 @@ function cubicExtrema(p0, p1, p2, p3) {
   return extrema;
 }
 
-function base3(t, p1, p2, p3, p4) {
+function base3(p1, p2, p3, p4, t) {
   const t1 = -3 * p1 + 9 * p2 - 9 * p3 + 3 * p4;
   const t2 = t * t1 + 6 * p1 - 12 * p2 + 6 * p3;
   return t * t2 - 3 * p1 + 3 * p2;
@@ -134,19 +126,71 @@ function cubiclLen(x1, y1, x2, y2, x3, y3, x4, y4, z) {
   z = z > 1 ? 1 : z < 0 ? 0 : z;
   const z2 = z / 2;
   const n = 12;
-  const Tvalues = [ -0.1252, 0.1252, -0.3678, 0.3678, -0.5873, 0.5873, -0.7699, 0.7699, -0.9041, 0.9041, -0.9816, 0.9816 ];
-  const Cvalues = [ 0.2491, 0.2491, 0.2335, 0.2335, 0.2032, 0.2032, 0.1601, 0.1601, 0.1069, 0.1069, 0.0472, 0.0472 ];
+  const Tvalues = [
+    -0.1252,
+    0.1252,
+    -0.3678,
+    0.3678,
+    -0.5873,
+    0.5873,
+    -0.7699,
+    0.7699,
+    -0.9041,
+    0.9041,
+    -0.9816,
+    0.9816,
+  ];
+  const Cvalues = [
+    0.2491,
+    0.2491,
+    0.2335,
+    0.2335,
+    0.2032,
+    0.2032,
+    0.1601,
+    0.1601,
+    0.1069,
+    0.1069,
+    0.0472,
+    0.0472,
+  ];
   let sum = 0;
   for (let i = 0; i < n; i++) {
     const ct = z2 * Tvalues[i] + z2;
-    const xbase = base3(ct, x1, x2, x3, x4);
-    const ybase = base3(ct, y1, y2, y3, y4);
-    const comb = xbase * xbase + ybase * ybase;
-    sum += Cvalues[i] * Math.sqrt(comb);
+    const speed = bezeSpeed(x1, y1, x2, y2, x3, y3, x4, y4, ct);
+    sum += Cvalues[i] * speed;
   }
   return z2 * sum;
 }
 
+function bezeSpeed (x1, y1, x2, y2, x3, y3, x4, y4, t) {
+  const xbase = base3(x1, x2, x3, x4, t);
+  const ybase = base3(y1, y2, y3, y4, t);
+  const comb = xbase * xbase + ybase * ybase;
+  return Math.sqrt(comb);
+}
+
+function evenSpeed(x1, y1, x2, y2, x3, y3, x4, y4, t, length) {
+  if (Util.isNil(length)) {
+    length = cubiclLen(x1, y1, x2, y2, x3, y3, x4, y4, 1);
+  }
+  const len = t * length;
+  let t1 = t, t2;
+  do {
+    // debugger;
+    const speed = bezeSpeed(x1, y1, x2, y2, x3, y3, x4, y4, t1);
+    t2 = t1 - (cubiclLen(x1, y1, x2, y2, x3, y3, x4, y4, t1) - len) / speed;
+    if (t2 >= 1) {
+      t2 = 1;
+      break;
+    } else if (Math.abs(t1 - t2) < EPSILON) {
+      break;
+    }
+    t1 = t2;
+  } while (true);
+
+  return t2;
+}
 
 module.exports = {
   at: cubicAt,
@@ -158,5 +202,6 @@ module.exports = {
   },
   pointDistance: cubicProjectPoint,
   extrema: cubicExtrema,
-  len: cubiclLen
+  len: cubiclLen,
+  evenSpeed: evenSpeed
 };

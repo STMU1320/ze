@@ -10,6 +10,7 @@ export default class Polyline extends Shape {
     points: [],
     smooth: 0,
     t: 1,
+    position: false,
     hasFill: false,
     hasStroke: true,
   };
@@ -43,14 +44,14 @@ export default class Polyline extends Shape {
       const mod = prevPoint[2] ? currentDis % prevPoint[2] : currentDis;
       const betweenDis = currentPoint[2] - prevPoint[2];
       let _t = mod / betweenDis;
-
       if (smooth && !Utils.isEmpty(cps)) {
-        // to do 贝塞尔曲线的运动位置需要做匀速化优化
         const cp1 = cps[prevIndex * 2];
         const cp2 = cps[prevIndex * 2 + 1];
+        // 速度平滑匀速处理
+        _t = Cubic.evenSpeed(prevPoint[0], prevPoint[1], cp1[0], cp1[1], cp2[0], cp2[1], currentPoint[0], currentPoint[1], _t, betweenDis);
         position = [
-          Cubic.at(currentPoint[0], cp1[0], cp2[0], prevPoint[0], _t),
-          Cubic.at(currentPoint[1], cp1[1], cp2[1], prevPoint[1], _t)
+          Cubic.at(prevPoint[0], cp1[0], cp2[0], currentPoint[0], _t),
+          Cubic.at(prevPoint[1], cp1[1], cp2[1], currentPoint[1], _t)
         ];
       } else {
         Vec2.lerp(position, prevPoint, currentPoint, _t);
@@ -83,13 +84,13 @@ export default class Polyline extends Shape {
   }
 
   setAttrs(props) {
-    const { t } = this.attrs;
-    if ('t' in props) {
+    const { t, position } = this.attrs;
+    if (position && 't' in props) {
       const _t = props.t;
       const { distances } = this.computed;
       if (_t !== t) {
-        const position = this._getCurrentPosition(_t, distances);
-        Utils.assign(this.computed, { position });
+        const positionData = this._getCurrentPosition(_t, distances);
+        Utils.assign(this.computed, { position: positionData });
       }
     }
     super.setAttrs(props);

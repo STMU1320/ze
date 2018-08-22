@@ -138,6 +138,8 @@ function drawLine(max, data) {
     return [positionX, positionY];
   });
 
+  const ball = lineLayer.addShape('circle');
+
 
   // lineLayer.addShape('polyline', {
   //   attrs: {
@@ -149,17 +151,30 @@ function drawLine(max, data) {
     attrs: {
       points,
       smooth: 0.2,
-      t: 0
+      t: 0,
+      position: true
+    },
+    style: {
+      lineWidth: 5
     },
     animate: {
       props: {
         t: 1
       },
-      duration: 1000,
-      effect: 'easeOut',
+      duration: 10000,
+      // effect: 'easeOut',
+      frameEnd (line) {
+        const { position } = line.computed;
+        ball.setAttrs({ x: position[0], y: position[1] });
+      },
       callback () {
         pointsLayer.show();
       },
+    },
+    event: {
+      click () {
+        console.log('click');
+      }
     }
   });
   points.forEach((item, index) => {
