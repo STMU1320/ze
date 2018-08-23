@@ -18,14 +18,14 @@ export default class Polyline extends Shape {
   constructor(cfg, container) {
     const defaultCfg = Utils.assign({}, {attrs: Polyline.ATTRS}, cfg);
     super('Polyline', defaultCfg, container);
-    const { smooth, points, t } = this.attrs;
+    const { smooth, points, t, position } = this.attrs;
     if (smooth) {
       this._cps = Helper.smooth(points, smooth);
     }
     // 这个方法不仅计算折线的总长度，还会将每个节点的长度存放到每个节点的索引2上(point[2])
     const distances = Helper.distances(points, this._cps, smooth);
     const computed = { distances };
-    if (t !== 1) {
+    if (t !== 1 && position) {
       computed.position = this._getCurrentPosition(t, distances);
     }
     Utils.assign(this.computed, computed);
@@ -41,9 +41,9 @@ export default class Polyline extends Shape {
     if (prevIndex > -1) {
       const prevPoint = points[prevIndex];
       const currentPoint = points[index];
-      const mod = prevPoint[2] ? currentDis % prevPoint[2] : currentDis;
+      const diffDis = prevPoint[2] ? (currentDis - prevPoint[2]) : currentDis;
       const betweenDis = currentPoint[2] - prevPoint[2];
-      let _t = mod / betweenDis;
+      let _t = Utils.clamp(diffDis / betweenDis, 0, 1);
       if (smooth && !Utils.isEmpty(cps)) {
         const cp1 = cps[prevIndex * 2];
         const cp2 = cps[prevIndex * 2 + 1];

@@ -1,4 +1,5 @@
 const data = [820, 932, 901, 934, 1290, 1330, 1320];
+const data2 = [1200, 1360, 1150, 890, 800, 760, 820];
 const xAxis = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const padding = 50;
@@ -138,35 +139,25 @@ function drawLine(max, data) {
     return [positionX, positionY];
   });
 
-  const ball = lineLayer.addShape('circle');
+  const points2 = data2.map((item, index) => {
+    let positionY = item * ratio;
+    positionY = contentHeight - positionY;
+    const positionX = half  + index * xStep;
+    return [positionX, positionY];
+  });
 
-
-  // lineLayer.addShape('polyline', {
-  //   attrs: {
-  //     points,
-  //     smooth: 0.2,
-  //   },
-  // });
   lineLayer.addShape('polyline', {
     attrs: {
       points,
       smooth: 0.2,
       t: 0,
-      position: true
-    },
-    style: {
-      lineWidth: 5
     },
     animate: {
       props: {
         t: 1
       },
-      duration: 10000,
-      // effect: 'easeOut',
-      frameEnd (line) {
-        const { position } = line.computed;
-        ball.setAttrs({ x: position[0], y: position[1] });
-      },
+      duration: 1000,
+      effect: 'easeOut',
       callback () {
         pointsLayer.show();
       },
@@ -177,7 +168,21 @@ function drawLine(max, data) {
       }
     }
   });
-  points.forEach((item, index) => {
+  lineLayer.addShape('polyline', {
+    attrs: {
+      points: points2,
+      t: 0
+    },
+    animate: {
+      props: {
+        t: 1
+      },
+      duration: 1000,
+      effect: 'easeOut'
+    },
+  });
+  const dataList = [...data, ...data2];
+  [...points, ...points2].forEach((item, index) => {
     const point = pointsLayer.addShape('circle', {
       attrs: {
         x: item[0],
@@ -216,7 +221,7 @@ function drawLine(max, data) {
       attrs: {
         x: item[0],
         y: item[1] - 20,
-        text: data[index],
+        text: dataList[index],
       },
       style: {
         textAlign: 'center'

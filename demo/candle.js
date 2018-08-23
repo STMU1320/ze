@@ -699,9 +699,10 @@ function getData(start, end) {
 draw(getData(0, 0.2));
 // 滑块部分
 function initSlider (width, sliderScale, onChange) {
+  const wrap = document.getElementById('content') || document.body;
   const progressEle = document.createElement('div');
   const slider = document.createElement('div');
-  const box = progressEle.getBoundingClientRect();
+  let box = progressEle.getBoundingClientRect();
   const sliderWidth = 0 | (width * sliderScale);
   let mousedown = false;
   let start = { x: 0, diff: 0, left: 0 };
@@ -711,6 +712,7 @@ function initSlider (width, sliderScale, onChange) {
   slider.style.width = `${sliderWidth}px`;
   function downHandle (e) {
     const sliderBox = slider.getBoundingClientRect();
+    box = progressEle.getBoundingClientRect();
     start = { x: e.x, diff: e.x - sliderBox.left, left: sliderBox.left };
     mousedown = true;
     document.addEventListener('mousemove', moveHandle, false);
@@ -743,7 +745,7 @@ function initSlider (width, sliderScale, onChange) {
 
   document.addEventListener('mouseup', upHandle, false);
   progressEle.appendChild(slider);
-  document.body.appendChild(progressEle);
+  wrap.appendChild(progressEle);
 }
 
 function sliderChange (value) {

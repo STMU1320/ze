@@ -42,7 +42,6 @@ export function clamp(a, min, max) {
   } else if (a > max) {
     return max;
   }
-
   return a;
 }
 

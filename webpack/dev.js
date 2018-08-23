@@ -7,7 +7,7 @@ const merge = require('webpack-merge');
 module.exports = merge({
   entry: {
     ze: path.resolve(__dirname, '../src/index.js'),
-    demo: path.resolve(__dirname, '../demo/demo.js')
+    demo: path.resolve(__dirname, '../demo/dev.js')
   },
   devtool: 'cheap-source-map',
   watch: true,
@@ -20,7 +20,7 @@ module.exports = merge({
     new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
       title: 'Demo',
-      template: path.join(__dirname, '../demo/index.html'),
+      template: path.join(__dirname, '../demo/index_dev.html'),
     })
   ],
   devServer: {

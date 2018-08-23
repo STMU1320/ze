@@ -68,6 +68,7 @@
       display: flex;
       list-style: none;
       padding: 0;
+      margin: 15px 0;
     }
     .color-item {
       position: relative;
@@ -107,12 +108,13 @@
   const colors = ['red', 'blue', 'green', 'Aqua', 'Crimson', 'Fuchsia', 'Gold', 'PaleGreen'];
 
   const div = document.createElement('div');
+  const container = document.getElementById('content') || document.body;
   const ul = generateColorBox(colors);
   const inputArea = generateInputArea();
   div.appendChild(ul);
   div.appendChild(inputArea);
 
-  document.body.appendChild(div);
+  container.appendChild(div);
 
 })(addText);
 
@@ -130,24 +132,26 @@ function callback (shape) {
   shape.destroy();
 };
 
-const canvas = new ZE.Canvas('container', {
+let canvas = new ZE.Canvas('container', {
   width: 1000,
-  height: 800,
+  height: 600,
   style: {
     fillStyle: '#fff',
   }
 });
 
 function addText (text, color, delay = 0) {
+  const fontSize = getRandomNum(16, 32);
   canvas.addShape('text', {
     attrs: {
       x: 1000,
-      y: getRandomNum(800),
+      y: getRandomNum(600 - fontSize),
       text
     },
     style: {
       fillStyle: color,
-      fontSize: getRandomNum(16, 32)
+      fontSize,
+      textBaseline: 'top'
     },
     animate: {
       props: {

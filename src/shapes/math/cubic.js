@@ -174,16 +174,18 @@ function evenSpeed(x1, y1, x2, y2, x3, y3, x4, y4, t, length) {
   if (Util.isNil(length)) {
     length = cubiclLen(x1, y1, x2, y2, x3, y3, x4, y4, 1);
   }
-  const len = t * length;
+  let len = t * length, currentLen = len;
   let t1 = t, t2;
   do {
     // debugger;
     const speed = bezeSpeed(x1, y1, x2, y2, x3, y3, x4, y4, t1);
-    t2 = t1 - (cubiclLen(x1, y1, x2, y2, x3, y3, x4, y4, t1) - len) / speed;
-    if (t2 >= 1) {
+    currentLen = cubiclLen(x1, y1, x2, y2, x3, y3, x4, y4, t1);
+    t2 = t1 - (currentLen - len) / speed;
+    // console.log(t1, t2);
+    if (Math.abs(t2) >= 1 || Number.isNaN(t2)) {
       t2 = 1;
       break;
-    } else if (Math.abs(t1 - t2) < EPSILON) {
+    } else if (Math.abs(t1 - t2) <= EPSILON) {
       break;
     }
     t1 = t2;

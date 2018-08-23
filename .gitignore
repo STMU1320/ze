@@ -32,6 +32,8 @@ _ReSharper*/
 packages/
 #Ignore node_modules
 node_modules/*
+*error.log
+web.config
 
 build/*
-dist/*
+

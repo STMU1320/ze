@@ -35,6 +35,9 @@ export default class Arc extends Shape {
   _createPath (ctx) {
     const { x, y, r, start, angle } = this.attrs;
     const cw  = angle < 0;
+    if (r <= 0) {
+      throw 'r must be greater than 0';
+    }
     let startAngle = Utils.translateToPi(start);
     let endAngle = Utils.translateToPi(start + angle);
     if (Math.abs(angle) >= 360) {

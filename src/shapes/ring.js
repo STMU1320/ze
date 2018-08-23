@@ -32,6 +32,9 @@ export default class Ring extends Shape {
     const { x, y, inner, outer, start, angle } = this.attrs;
     const startAngle = Utils.translateToPi(start);
     const endAngle = Utils.translateToPi(start + angle);
+    if (outer <= 0 || outer <= inner) {
+      throw 'outer must be greater than inner';
+    }
     if (Math.abs(angle) >= 360) {
       ctx.beginPath();
       ctx.arc(x, y, outer,  0, Math.PI * 2, false);

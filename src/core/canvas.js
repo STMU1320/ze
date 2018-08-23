@@ -50,6 +50,7 @@ export default class Canvas extends EventBus {
     this.element = canvas;
     this.element.width = width;
     this.element.height = height;
+    this.element.style.display = 'block';
     this.container = container;
     this.context = canvas.getContext('2d');
     if (style) {

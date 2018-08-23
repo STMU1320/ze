@@ -1,15 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="./style.css">
+  <script src="../dist/ze.js"></script>
   <title>Demo</title>
 </head>
-<body>
-  <div id="container"></div>
 
-  <!-- <img id="bgImg" src="http://fc.topitme.com/c/40/8a/1129884905f008a40co.jpg" alt=""> -->
-  <!-- <canvas id="bgImg"></canvas> -->
+<body>
+  <ul id="nav">
+    <li data-route="index">
+        首页
+    </li>
+    <li data-route="line">
+        Line Demo
+    </li>
+    <li data-route="bar">
+        Bar Demo
+    </li>
+    <li data-route="pie">
+        Pie Demo
+    </li>
+    <li data-route="polygon">
+        Polygon Demo
+    </li>
+    <li data-route="circle">
+        Animate Demo
+    </li>
+    <li data-route="candle">
+        Candle Demo
+    </li>
+    <li data-route="text">
+        Text Demo
+    </li>
+  </ul>
+  <div id="content">
+    <div class="loading"></div>
+  </div>
+  <script>
+
+    function parseUrl(url) {
+      const result = {};
+      if (url === '') {
+        return {};
+      }
+      const queryStr = url.includes('?') ? url.split('?')[1] : url;
+      const queryArr = queryStr.split('&');
+      if (queryArr.length !== 0) {
+        queryArr.forEach((item) => {
+          const kv = item.split('=');
+          result[kv[0]] = kv[1];
+        });
+      }
+      return result;
+    }
+
+    window.onload = () => {
+      let route = parseUrl(location.search).route || 'index';
+      const content = $('#content');
+      const loading = $('.loading');
+      const container = document.createElement('div');
+      container.setAttribute('id', 'container');
+      const sct = document.createElement('script');
+      sct.onload = () => {  loading.style.display = 'none';  }
+      sct.src = `./${route}.js`;
+      content.appendChild(container);
+      content.appendChild(sct);
+    }
+
+    // 导航处理
+    function navHandle(e) {
+      e.preventDefault();
+      let target = e.target;
+      let tagname = target.tagName;
+      // debugger;
+      if (tagname === 'A') {
+        target = target.parentNode;
+        tagname = target.tagName;
+      }
+
+      if (tagname !== 'LI') {
+        return;
+      }
+      const route = target.dataset.route
+      if (route) {
+        const href = location.pathname;
+        const url = `${href}?route=${route}`;
+        location.replace(url);
+      }
+    }
+    const $ = (selector) => document.querySelector(selector);
+    const nav = $('#nav');
+    nav.addEventListener('click', navHandle, false);
+  </script>
 </body>
+
 </html>

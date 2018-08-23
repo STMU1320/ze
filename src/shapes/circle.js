@@ -26,6 +26,9 @@ export default class Circle extends Shape {
   
   _createPath (ctx) {
     const { x, y, r, cw } = this.attrs;
+    if (r <= 0) {
+      throw 'r must be greater than 0';
+    }
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 2*Math.PI, cw);
     ctx.closePath();
