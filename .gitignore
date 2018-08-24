@@ -34,6 +34,7 @@ packages/
 node_modules/*
 *error.log
 web.config
+.vscode/
 
 build/*
 

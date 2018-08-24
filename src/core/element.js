@@ -421,6 +421,24 @@ export default class Element {
     return canvas.off(type, fun, this);
   }
 
+  addEventListener = (...arg) => {
+    this.on(arg);
+  }
+
+  removeEventListener = (...arg) => {
+    this.off(arg);
+  }
+
+  once = (type, fun) => {
+    const canvas = this.getCanvas();
+    return canvas.on(type, fun, this, true);
+  }
+
+  trigger = (...data) => {
+    const canvas = this.getCanvas();
+    return canvas.trigger(type, this, ...data);
+  }
+
   show = () => {
     if (!this.visible) {
       this.visible = true;

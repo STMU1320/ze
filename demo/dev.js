@@ -26,7 +26,7 @@ const canvas = new ZE.Canvas('container', {
 });
 
 for (let i = 0; i < 150; i++) {
-  const duration = getRandomNum(800, 1200);
+  const duration = getRandomNum(800, 1600);
   const firstDiff = getRandomNum(-centerX / 8, centerX / 8);
   const secondDiff = getRandomNum(firstDiff * 1.5, firstDiff * 3);
   const thirdDiff = getRandomNum(secondDiff * 1.5, secondDiff * 3);
