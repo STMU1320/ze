@@ -97,6 +97,7 @@
       align-items: flex-end;
     }
     #danmu {
+      border: 1px solid #eee;
       width: 260px;
       height: 60px;
     }`;
@@ -157,7 +158,7 @@ function addText (text, color, delay = 0) {
       props: {
         x: -50
       },
-      duration: getRandomNum(10000, 20000),
+      duration: getRandomNum(8000, 16000),
       callback,
       delay,
       // repeat: true
@@ -171,9 +172,9 @@ function addText (text, color, delay = 0) {
 }
 
 function addShape (count = 500) {
-  const { shapeLength } = canvas.computed;
-  if (shapeLength < count) {
-    for (let i = 0; i < count - shapeLength; i++) {
+  const { shapes } = canvas.computed;
+  if (shapes < count) {
+    for (let i = 0; i < count - shapes; i++) {
       addText(i, ['#fff', 'blue', 'green', 'red'][ i % 4], getRandomNum(20000));
     }
   }
@@ -197,5 +198,5 @@ layer.addShape('video', {
 
  addShape();
 
- setInterval(addShape, 10000);
+ setInterval(addShape, 8000);
 canvas.draw();

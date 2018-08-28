@@ -134,9 +134,10 @@ export default class Element {
   _updateComputed() {}
 
   _stopAnimation = cb => {
+    const { timer } = this;
     const canvas = this.getCanvas();
-    if (this.timer) {
-      cancelAnimationFrame(this.timer);
+    if (timer) {
+      cancelAnimationFrame(timer);
       this.timer = null;
     }
     const animateCount = canvas.computed.animate;
@@ -247,16 +248,12 @@ export default class Element {
     });
     if (!Utils.isEmpty(style) || 'opacity' in attrs) {
       nextStatus.styleChanged = true;
-      // this._set('style', style);
-      // if (this.type === 'Layer') {
-      //   this._initBrush();
-      // }
       this.setStyle(style);
     }
     if (!Utils.isEmpty(attrs)) {
+      this._updateComputed(attrs);
       this._set('attrs', attrs);
     }
-    this._updateComputed();
     this.setStatus(nextStatus);
     return this;
   }
@@ -267,18 +264,13 @@ export default class Element {
       return ;
     }
     const keys = Object.keys(style);
+    if (keys.includes('lineWidth') || keys.includes('font')) {
+      this._updateComputed(style);
+    }
     this._set('style', style);
-    // if (this.shapes) {
-    //   this.shapes.forEach(shape => {
-    //     shape.setStyle(style);
-    //   });
-    // }
     const parentHrt = this.container.getHeritage();
     const parentStyle = parentHrt.style;
     this._setHeritage({ style: Object.assign({}, parentStyle, style) });
-    if (keys.includes('lineWidth') || keys.includes('font')) {
-      this._updateComputed();
-    }
     return this;
   }
 

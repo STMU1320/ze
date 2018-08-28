@@ -32,24 +32,26 @@ export default class Polygon extends Shape {
     this.setAttrs({points});
   }
 
-  _updateComputed() {
-    const {points} = this.attrs;
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    points.forEach(point => {
-      if (point[0] < minX) {
-        minX = point[0];
-      }
-      if (point[1] < minY) {
-        minY = point[1];
-      }
-      if (point[0] > maxX) {
-        maxX = point[0];
-      }
-      if (point[1] > maxY) {
-        maxY = point[1];
-      }
-    });
-    Utils.assign(this.computed, {minX, minY, maxX, maxY});
+  _updateComputed(props) {
+    if (props && props.points) {
+      const { points } = props;
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      points.forEach(point => {
+        if (point[0] < minX) {
+          minX = point[0];
+        }
+        if (point[1] < minY) {
+          minY = point[1];
+        }
+        if (point[0] > maxX) {
+          maxX = point[0];
+        }
+        if (point[1] > maxY) {
+          maxY = point[1];
+        }
+      });
+      Utils.assign(this.computed, {minX, minY, maxX, maxY});
+    }
   }
 
   setAttrs(props) {
@@ -78,7 +80,7 @@ export default class Polygon extends Shape {
     if (hasFill) {
       let {minX, minY, maxX, maxY} = this.computed;
       if (minX == null || minY == null || maxX == null || maxY == null) {
-        this._updateComputed();
+        this._updateComputed({ points });
         minX = this.computed.minX;
         minY = this.computed.minY;
         maxX = this.computed.maxX;

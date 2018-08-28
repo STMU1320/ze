@@ -14,7 +14,20 @@ export default class Text extends Shape {
   constructor (cfg, container) {
     const defaultCfg = Utils.assign({}, { attrs: Text.ATTRS, style: Text.STYLE } ,cfg);
     super('Text', defaultCfg, container);
+    this._updateComputed(defaultCfg.attrs);
   }
+
+  _needUpdateComputedByProps (props) {
+    if (!props) {
+      return false;
+    }
+    const { text, lineHeight, font } = props;
+    if (text == null && font == null && lineHeight == null) {
+      return false;
+    }
+    return true;
+  }
+
   _getCacheCtx () {
     let ctx = this._cacheCtx;
     if (!ctx) {
@@ -24,10 +37,14 @@ export default class Text extends Shape {
     return ctx;
   }
 
-  _updateComputed () {
+  _updateComputed (props) {
+    if (!this._needUpdateComputedByProps(props)) {
+      return ;
+    }
+    let text = props.text || this.attrs.text,
+        lineHeight = props.lineHeight || this.attrs.lineHeight,
+        font = props.font || this.style.font;
     const ctx = this._getCacheCtx();
-    const { text, lineHeight } = this.attrs;
-    const { font } = this.style;
     const brash = this.getContext();
     ctx.font = font || brash.font;
     const fontSize = this._getFontSize(ctx.font);
@@ -55,12 +72,12 @@ export default class Text extends Shape {
     const ctx = this._getCacheCtx();
     const { textBaseline, textAlign } = this.style;
     let { w, h, multi } = this.computed;
-    if (!w || !h) {
-      this._updateComputed();
-      w = this.computed.w;
-      h = this.computed.h;
-      multi = this.computed.multi;
-    }
+    // if (!w || !h) {
+      
+    //   w = this.computed.w;
+    //   h = this.computed.h;
+    //   multi = this.computed.multi;
+    // }
     const lh = this._getFontSize(ctx.font);
     if (!multi) {
       switch (textBaseline) {

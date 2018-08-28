@@ -22,8 +22,8 @@ export default class Canvas extends EventBus {
     this.height = height;
     this.style = style;
     this.layers = [];
-    this.computed = {shapeLength: 0, layerLength: 0, animate: 0};
-    this._heritage = { style };
+    this.computed = {shapes: 0, layers: 0, animate: 0};
+    this._heritage = { ...style };
     this._status = {drawn: false, dirty: false};
     this._initElement(ele);
     this._initEvent();
@@ -155,11 +155,11 @@ export default class Canvas extends EventBus {
   }
 
   _contentChange(type, changeNum) {
-    const {shapeLength, layerLength} = this.computed;
+    const {shapes, layers} = this.computed;
     if (type === 'layer') {
-      this._setComputed({layerLength: layerLength + changeNum});
+      this._setComputed({layers: layers + changeNum});
     } else {
-      this._setComputed({shapeLength: shapeLength + changeNum});
+      this._setComputed({shapes: shapes + changeNum});
     }
   }
 
@@ -279,35 +279,33 @@ export default class Canvas extends EventBus {
   }
 
   update() {
-    const { drawn } = this.getStatus();
+    const { drawn } = this._status;
     if (drawn) {
       this.draw();
     }
   }
 
   _draw = () => {
-    const { element, layers, context } = this;
-    const ctx = context;
-    const status = this.getStatus();
+    const { element, layers, context, computed, _status } = this;
     this._updateDrawInfo();
-    ctx.clearRect(0, 0, element.width, element.height);
+    context.clearRect(0, 0, element.width, element.height);
     layers.forEach(layer => {
-      layer._draw(ctx);
+      layer._draw(context);
     });
-
-    if (!status.drawn) {
+    if (!_status.drawn) {
       this._setStatus({drawn: true});
       this.emit('@@play');
     }
-    if (this.computed.animate > 0) {
+    if (computed.animate > 0) {
       this.timer = requestAnimationFrame(this._draw);
     } else {
       this.timer = null;
     }
   }
   draw() {
-    if (this.timer) {
-      cancelAnimationFrame(this.timer);
+    const { timer } = this;
+    if (timer) {
+      cancelAnimationFrame(timer);
     }
     this.timer = requestAnimationFrame(this._draw);
   }

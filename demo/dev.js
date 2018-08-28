@@ -1,3 +1,126 @@
+// 此处代码为生成Html元素
+(function (sendBtnClick) {
+
+  let selectedColor = 'white';
+
+  function colorOptionClick (e) {
+    const li = e.target;
+    const ul = e.currentTarget;
+    Array.from(ul.getElementsByTagName('li')).forEach(ele => {
+      ele.style.borderColor = '#ccc';
+    });
+    const color = li.dataset.color;
+    li.style.borderColor = color;
+    selectedColor = color;
+  }
+  
+  function btnClick () {
+    const textarea = document.getElementById('danmu');
+    const text = textarea.value.trim();
+    if (!text) {
+      return ;
+    }
+    sendBtnClick && sendBtnClick(text, selectedColor);
+  }
+
+  function generateColorBox (colors) {
+    if (!colors) {
+      return;
+    }
+    const ul = document.createElement('ul');
+    ul.className = 'color-wrap';
+    ul.addEventListener('click', colorOptionClick);
+    colors.forEach((color, index) => {
+      const li = document.createElement('li');
+      li.className = 'color-item';
+      li.style.color = color;
+      li.innerText = '■';
+      li.setAttribute('data-color', color);
+      if (index === 0) {
+        selectedColor = color;
+        li.style.borderColor = color;
+      }
+      ul.appendChild(li);
+    });
+    
+    return ul;
+  }
+
+  function generateInputArea () {
+    const input = document.createElement('textarea');
+    const btn = document.createElement('button');
+    const div = document.createElement('div');
+    input.id = 'danmu';
+    btn.className = 'btn-send';
+    btn.innerText = '发送';
+    btn.addEventListener('click', btnClick);
+    div.className = 'input-wrap';
+    div.appendChild(input);
+    div.appendChild(btn);
+    return div;
+  }
+
+  function generateStyle () {
+    const head = document.getElementsByTagName('head')[0];
+    const style = document.createElement('style');
+    style.innerHTML = `
+    .color-wrap {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      margin: 15px 0;
+    }
+    .color-item {
+      position: relative;
+      display: block;
+      width: 16px;
+      height: 16px;
+      margin-right: 15px;
+      font-size: 20px;
+      text-align: center;
+      line-height: 10px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    .btn-send {
+      padding: 3px 8px;
+      margin-left: 15px;
+      border-radius: 5px;
+      border: none;
+      background-color: #1890FF;
+      color: white;
+      text-align: center;
+      cursor: pointer;
+    }
+    .input-wrap {
+      display: flex;
+      align-items: flex-end;
+    }
+    #danmu {
+      border: 1px solid #eee;
+      width: 260px;
+      height: 60px;
+    }`;
+    head.appendChild(style);
+  }
+
+  generateStyle();
+
+  const colors = ['red', 'blue', 'green', 'Aqua', 'Crimson', 'Fuchsia', 'Gold', 'PaleGreen'];
+
+  const div = document.createElement('div');
+  const container = document.getElementById('content') || document.body;
+  const ul = generateColorBox(colors);
+  const inputArea = generateInputArea();
+  div.appendChild(ul);
+  div.appendChild(inputArea);
+
+  container.appendChild(div);
+
+})(addText);
+
+// 生成Html结束，以下为弹幕系统代码
+
 function getRandomNum (min, max) {
   if (!max) {
     max = min;
@@ -6,104 +129,74 @@ function getRandomNum (min, max) {
   return Math.round(Math.random() * (max - min) + min);
 }
 
-function clamp(a, min, max) {
-  if (a < min) {
-    return min;
-  } else if (a > max) {
-    return max;
-  }
-  return a;
-}
+function callback (shape) {
+  shape.destroy();
+};
 
-const colors = ['#ffe065', '#f968e0', '#b16af3', '#3bcfea', '#77f3da', '#79e942'];
-const wrap = document.getElementById('#content') || document.body;
-const width = wrap.clientWidth;
-const height = wrap.clientHeight || window.innerHeight;
-const centerX = width / 2;
-const canvas = new ZE.Canvas('container', {
-  width,
-  height
+let canvas = new ZE.Canvas('container', {
+  width: 1000,
+  height: 600,
+  style: {
+    fillStyle: '#fff',
+  }
 });
 
-for (let i = 0; i < 150; i++) {
-  const duration = getRandomNum(800, 1600);
-  const firstDiff = getRandomNum(-centerX / 8, centerX / 8);
-  const secondDiff = getRandomNum(firstDiff * 1.5, firstDiff * 3);
-  const thirdDiff = getRandomNum(secondDiff * 1.5, secondDiff * 3);
-  const maxR = clamp((1 - Math.abs(thirdDiff / centerX)) * 70, 10, 70);
-  const ball = canvas.addShape('circle', {
+function addText (text, color, delay = 0) {
+  const fontSize = getRandomNum(16, 32);
+  canvas.addShape('text', {
     attrs: {
-      x: centerX,
-      y: 0,
-      r: 3,
-      opacity: 0.2
+      x: 1000,
+      y: getRandomNum(600 - fontSize),
+      text
     },
     style: {
-      fillStyle: 'white'
+      fillStyle: color,
+      fontSize,
+      textBaseline: 'top'
     },
     animate: {
       props: {
-        fillStyle: colors[getRandomNum(colors.length - 1)],
-        r: getRandomNum(30, maxR),
-        opacity: 0.8
+        x: -50
       },
-      duration,
-      effect: 'easeOut'
-    }
-  });
-
-  const line = canvas.addShape('polyline', {
-    attrs: {
-      points: [[centerX, 0], [centerX + firstDiff, height * 0.5 ], [centerX + secondDiff, height * 0.75], [centerX + thirdDiff, height - getRandomNum(maxR * 1.5)]],
-      smooth: 0.2,
-      t: 0,
-      position: true
+      duration: getRandomNum(8000, 16000),
+      callback,
+      delay,
+      // repeat: true
     },
-    visible: false,
-    animate: {
-      props: {
-        t: 1
-      },
-      duration,
-      effect: 'easeOutQuart',
-      frameEnd (self) {
-        const { position } = self.computed;
-        self.ball.setAttrs({ x: position[0], y: position[1] });
-      },
-      callback (self) {
-        const ball = self.ball;
-        const { x, y } = ball.attrs;
-        const ratio =  1.2 - Math.abs((x - centerX) / centerX);
-        const diffX = getRandomNum(-100, 100) * ratio;
-        const diffY = getRandomNum(-50, 50) * ratio;
-        ball.animate({
-          props: {
-            x: x + diffX,
-            y: y + diffY,
-          },
-          duration: getRandomNum(1500, 2500),
-          loop: true
-        });
+    event: {
+      click (e) {
+        console.log(e);
       }
     }
   });
-  line.ball = ball;
 }
 
-const textLayer = canvas.addLayer();
+function addShape (count = 500) {
+  const { shapes } = canvas.computed;
+  if (shapes < count) {
+    for (let i = 0; i < count - shapes; i++) {
+      addText(i, ['#fff', 'blue', 'green', 'red'][ i % 4], getRandomNum(20000));
+    }
+  }
+}
 
-textLayer.addShape('text', {
+
+const layer = canvas.addLayer({zIndex: -2});
+
+layer.addShape('video', {
   attrs: {
-    text: 'Z E',
-    x: centerX,
-    y: height * 0.4
-  },
-  style: {
-    fontSize: 90,
-    textAlign: 'center',
-    textBaseline: 'middle'
+    x: 0,
+    y: 0,
+    w: canvas.width,
+    h: canvas.height,
+    video: 'https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8',
   }
 });
 
-canvas.draw();
+ const ctx = canvas.getContext();
+ ctx.canvas.style.background = '#333';
 
+ addShape();
+
+ setInterval(addShape, 8000);
+canvas.draw();
