@@ -6,15 +6,6 @@ function getRandomNum (min, max) {
   return Math.round(Math.random() * (max - min) + min);
 }
 
-function clamp (value, min, max) {
-  if (value < min) {
-    value = min;
-  } else if (value > max) {
-    value = max;
-  }
-  return value;
-}
-
 function getData (num) {
   const data = [];
   while (--num > 0) {
@@ -28,8 +19,9 @@ function getData (num) {
 
 
 const data = getData(getRandomNum(5, 10));
+const { Canvas, Utils } = ZE;
 
-const canvas = new ZE.Canvas('container', {
+const canvas = new Canvas('container', {
   width: 800,
   height: 600,
   style: {
@@ -46,6 +38,18 @@ const startX = padding, startY = height - padding;
 
 const infoBoxWidth = 120;
 const infoBoxHeight = 80;
+
+const getPosition = (e) => {
+  let x = e.x + 20, y = e.y + 20;
+  if (x > width - infoBoxWidth - padding) {
+    x = e.x - infoBoxWidth - 20;
+  }
+
+  if (y > startY - infoBoxHeight) {
+    y = e.y - infoBoxHeight - 20;
+  }
+  return { x, y };
+};
 
 const infoModal = canvas.addLayer({
   attrs: {
@@ -93,8 +97,7 @@ const layer = canvas.addLayer({
   },
   event: {
     mouseenter (e) {
-      const x = clamp(e.x + 20, padding, width - infoBoxWidth);
-      const y = clamp(e.y + 20, 0, startY - infoBoxHeight);
+      const { x, y } = getPosition(e);
       infoModal.animate({
         props: {
           x,
@@ -106,14 +109,17 @@ const layer = canvas.addLayer({
     mouseout () {
       infoModal.hide();
     },
-    mousemove(e) {
-      const x = clamp(e.x + 20, padding, width - infoBoxWidth);
-      const y = clamp(e.y + 20, 0, startY - infoBoxHeight);
-      infoModal.setAttrs({
-        x,
-        y
-      }).update();
-    }
+    mousemove: Utils.throttle((e) => {
+      const { x, y } = getPosition(e);
+      infoModal.animate({
+        props: {
+          x,
+          y
+        },
+        duration: 180,
+        effect: 'easeOut'
+      });
+    }, 150)
   }
 });
 

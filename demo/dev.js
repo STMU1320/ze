@@ -1,202 +1,769 @@
-// 此处代码为生成Html元素
-(function (sendBtnClick) {
-
-  let selectedColor = 'white';
-
-  function colorOptionClick (e) {
-    const li = e.target;
-    const ul = e.currentTarget;
-    Array.from(ul.getElementsByTagName('li')).forEach(ele => {
-      ele.style.borderColor = '#ccc';
-    });
-    const color = li.dataset.color;
-    li.style.borderColor = color;
-    selectedColor = color;
-  }
-  
-  function btnClick () {
-    const textarea = document.getElementById('danmu');
-    const text = textarea.value.trim();
-    if (!text) {
-      return ;
-    }
-    sendBtnClick && sendBtnClick(text, selectedColor);
-  }
-
-  function generateColorBox (colors) {
-    if (!colors) {
-      return;
-    }
-    const ul = document.createElement('ul');
-    ul.className = 'color-wrap';
-    ul.addEventListener('click', colorOptionClick);
-    colors.forEach((color, index) => {
-      const li = document.createElement('li');
-      li.className = 'color-item';
-      li.style.color = color;
-      li.innerText = '■';
-      li.setAttribute('data-color', color);
-      if (index === 0) {
-        selectedColor = color;
-        li.style.borderColor = color;
-      }
-      ul.appendChild(li);
-    });
-    
-    return ul;
-  }
-
-  function generateInputArea () {
-    const input = document.createElement('textarea');
-    const btn = document.createElement('button');
-    const div = document.createElement('div');
-    input.id = 'danmu';
-    btn.className = 'btn-send';
-    btn.innerText = '发送';
-    btn.addEventListener('click', btnClick);
-    div.className = 'input-wrap';
-    div.appendChild(input);
-    div.appendChild(btn);
-    return div;
-  }
-
-  function generateStyle () {
-    const head = document.getElementsByTagName('head')[0];
-    const style = document.createElement('style');
-    style.innerHTML = `
-    .color-wrap {
-      display: flex;
-      list-style: none;
-      padding: 0;
-      margin: 15px 0;
-    }
-    .color-item {
-      position: relative;
-      display: block;
-      width: 16px;
-      height: 16px;
-      margin-right: 15px;
-      font-size: 20px;
-      text-align: center;
-      line-height: 10px;
-      border: 1px solid #ccc;
-      cursor: pointer;
-    }
-    .btn-send {
-      padding: 3px 8px;
-      margin-left: 15px;
-      border-radius: 5px;
-      border: none;
-      background-color: #1890FF;
-      color: white;
-      text-align: center;
-      cursor: pointer;
-    }
-    .input-wrap {
-      display: flex;
-      align-items: flex-end;
-    }
-    #danmu {
-      border: 1px solid #eee;
-      width: 260px;
-      height: 60px;
-    }`;
-    head.appendChild(style);
-  }
-
-  generateStyle();
-
-  const colors = ['red', 'blue', 'green', 'Aqua', 'Crimson', 'Fuchsia', 'Gold', 'PaleGreen'];
-
-  const div = document.createElement('div');
-  const container = document.getElementById('content') || document.body;
-  const ul = generateColorBox(colors);
-  const inputArea = generateInputArea();
-  div.appendChild(ul);
-  div.appendChild(inputArea);
-
-  container.appendChild(div);
-
-})(addText);
-
-// 生成Html结束，以下为弹幕系统代码
-
-function getRandomNum (min, max) {
-  if (!max) {
-    max = min;
-    min = 0;
-  }
-  return Math.round(Math.random() * (max - min) + min);
+const style = `
+.progress {
+  position: relative;
+  height: 20px;
+  margin: 20px 0;
+  padding: 1px;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  box-sizing: content-box;
+}
+.slider {
+  position: absolute;
+  top: 2px;
+  left: 0px;
+  height: 16px;
+  width: 48px;
+  background: linear-gradient(#eee, #fff, #eee);
+  border: 1px solid #d6d6d6;
+  border-radius: 2px;
+  box-shadow: 0px 2px 2px 0px #00000014;
+  cursor: pointer;
 }
 
-function callback (shape) {
-  shape.destroy();
+.slider::before, .slider::after {
+  content: ' ';
+  display: block;
+  position: absolute;
+  top: 1px;
+  width: 2px;
+  height: 12px;
+  border-radius: 2px;
+  background: #eee;
+  border: 1px solid #ccc;
+}
+.slider::before {
+  left: 25%;
+}
+.slider::after {
+  right: 25%;
+}`;
+
+const head = document.getElementsByTagName('head')[0];
+const styleEle = document.createElement('style');
+styleEle.innerHTML = style;
+head.appendChild(styleEle);
+
+// 以上生成样式
+
+const kLineData = {
+  data: [
+    ['20170103', 10205.14, 10261.09, 10275.13, 10205.14, 18614365164, 0.82],
+    ['20170104', 10264.43, 10381.79, 10382.02, 10255.75, 22132454530, 1.16],
+    ['20170105', 10382.6, 10368.12, 10396.91, 10365.44, 21897750610, -0.16],
+    ['20170106', 10362.85, 10289.65, 10363.12, 10286.52, 21986545991, -0.79],
+    ['20170109', 10281.31, 10328.0, 10337.7, 10258.37, 20710711794, 0.38],
+    ['20170110', 10327.01, 10305.1, 10357.14, 10301.69, 20767550309, -0.26],
+    ['20170111', 10294.3, 10216.62, 10331.37, 10213.86, 19946592006, -0.87],
+    ['20170112', 10207.43, 10131.48, 10236.09, 10127.42, 19035804525, -0.82],
+    ['20170113', 10135.68, 10008.17, 10155.22, 9997.4, 20007806304, -1.21],
+    ['20170116', 9993.56, 9709.98, 9993.56, 9482.84, 26862082264, -2.98],
+    ['20170117', 9684.53, 9825.15, 9827.91, 9611.19, 20435793580, 1.16],
+    ['20170118', 9801.08, 9805.22, 9858.79, 9774.76, 16564020060, -0.22],
+    ['20170119', 9781.64, 9768.38, 9821.22, 9746.3, 14719100739, -0.37],
+    ['20170120', 9763.04, 9904.77, 9925.17, 9762.78, 17109477239, 1.39],
+    ['20170123', 9919.41, 9974.0, 10010.08, 9919.41, 17123428455, 0.69],
+    ['20170124', 9972.61, 9940.24, 9978.27, 9928.08, 15420360419, -0.36],
+    ['20170125', 9931.62, 9975.52, 9991.5, 9922.49, 14130238919, 0.34],
+    ['20170126', 9989.85, 10051.32, 10053.36, 9989.36, 13357748585, 0.74],
+    ['20170203', 10061.29, 10004.46, 10066.7, 9985.3, 12951469200, -0.47],
+    ['20170206', 10004.22, 10075.76, 10080.58, 9984.64, 16055681084, 0.71],
+    ['20170207', 10072.51, 10052.69, 10093.67, 10011.77, 17572548036, -0.26],
+    ['20170208', 10043.61, 10127.61, 10127.66, 10003.92, 20365712169, 0.72],
+    ['20170209', 10124.45, 10180.46, 10194.42, 10116.45, 22444204032, 0.5],
+    ['20170210', 10184.57, 10185.66, 10212.48, 10155.36, 23556751300, 0.03],
+    ['20170213', 10188.71, 10269.09, 10279.12, 10187.09, 23343262172, 0.81],
+    ['20170214', 10273.09, 10262.97, 10286.37, 10234.37, 19812825395, -0.08],
+    ['20170215', 10259.95, 10178.76, 10294.77, 10160.11, 22857410196, -0.84],
+    ['20170216', 10175.12, 10250.3, 10251.84, 10163.24, 20284411897, 0.72],
+    ['20170217', 10261.1, 10196.11, 10296.14, 10183.38, 23570271972, -0.56],
+    ['20170220', 10203.02, 10326.24, 10334.59, 10203.02, 22584334645, 1.26],
+    ['20170221', 10338.87, 10403.57, 10407.14, 10330.29, 23699455010, 0.72],
+    ['20170222', 10403.92, 10441.09, 10441.53, 10385.1, 23352601948, 0.34],
+    ['20170223', 10439.83, 10432.31, 10454.16, 10379.05, 24508361846, -0.12],
+    ['20170224', 10423.64, 10442.62, 10446.5, 10396.75, 21685878549, 0.1],
+    ['20170227', 10443.3, 10354.09, 10447.68, 10345.47, 21171878180, -0.86],
+    ['20170228', 10354.87, 10388.83, 10402.28, 10340.09, 18620308703, 0.34],
+    ['20170301', 10387.63, 10415.25, 10446.38, 10378.12, 21796787053, 0.23],
+    ['20170302', 10429.98, 10367.58, 10443.87, 10362.0, 21259043752, -0.49],
+    ['20170303', 10339.89, 10393.5, 10404.87, 10308.22, 20958083766, 0.25],
+    ['20170306', 10406.23, 10519.53, 10519.67, 10406.23, 22725781985, 1.18],
+    ['20170307', 10527.83, 10548.86, 10548.86, 10495.51, 21843226090, 0.25],
+    ['20170308', 10549.99, 10497.92, 10549.99, 10473.88, 19771029658, -0.51],
+    ['20170309', 10484.28, 10422.18, 10484.68, 10402.36, 20072514893, -0.73],
+    ['20170310', 10415.38, 10450.89, 10476.59, 10415.38, 17305570904, 0.29],
+    ['20170313', 10450.65, 10557.19, 10557.61, 10402.72, 20877853332, 1.02],
+    ['20170314', 10561.5, 10531.81, 10577.48, 10515.52, 19397121897, -0.27],
+    ['20170315', 10515.59, 10541.99, 10551.71, 10499.85, 18364760511, 0.1],
+    ['20170316', 10573.77, 10622.89, 10628.18, 10573.77, 23214384963, 0.76],
+    ['20170317', 10632.05, 10516.74, 10650.46, 10514.67, 24862359996, -1.01],
+    ['20170320', 10512.89, 10528.96, 10534.11, 10459.74, 21336567745, 0.13],
+    ['20170321', 10527.41, 10583.37, 10583.37, 10513.63, 19955886300, 0.48],
+    ['20170322', 10535.67, 10552.29, 10586.48, 10488.63, 22831183259, -0.32],
+    ['20170323', 10558.34, 10580.21, 10607.73, 10477.57, 23069347819, 0.25],
+    ['20170324', 10584.09, 10644.8, 10666.12, 10580.11, 23083600995, 0.58],
+    ['20170327', 10643.45, 10582.37, 10660.23, 10578.75, 21312321140, -0.6],
+    ['20170328', 10580.16, 10563.37, 10606.09, 10538.02, 18610434383, -0.18],
+    ['20170329', 10573.12, 10521.71, 10585.88, 10497.01, 22186342693, -0.39],
+    ['20170330', 10505.39, 10349.79, 10513.89, 10328.95, 24974588170, -1.63],
+    ['20170331', 10351.33, 10427.74, 10427.89, 10351.33, 19253181762, 0.77],
+    ['20170405', 10496.78, 10625.15, 10628.6, 10496.78, 25066701939, 1.88],
+    ['20170406', 10649.84, 10654.97, 10661.77, 10608.13, 22844909336, 0.26],
+    ['20170407', 10652.4, 10669.67, 10702.88, 10635.08, 25046351008, 0.13],
+    ['20170410', 10663.86, 10604.35, 10664.1, 10593.77, 27890326907, -0.61],
+    ['20170411', 10601.0, 10656.6, 10662.5, 10476.66, 33605929649, 0.5],
+    ['20170412', 10643.49, 10586.3, 10667.6, 10584.7, 31144742561, -0.65],
+    ['20170413', 10578.58, 10652.2, 10678.78, 10571.7, 24001425163, 0.61],
+    ['20170414', 10662.26, 10521.66, 10662.53, 10515.37, 25922845288, -1.24],
+    ['20170417', 10483.96, 10448.85, 10505.63, 10406.52, 23142454396, -0.68],
+    ['20170418', 10449.01, 10415.12, 10522.85, 10405.35, 21646277061, -0.34],
+    ['20170419', 10377.28, 10346.12, 10393.73, 10235.0, 24604082627, -0.63],
+    ['20170420', 10346.99, 10358.34, 10411.75, 10306.39, 21818231935, 0.1],
+    ['20170421', 10357.86, 10312.91, 10407.78, 10300.4, 18173943438, -0.45],
+    ['20170424', 10285.04, 10091.14, 10285.04, 10060.11, 20314106555, -2.16],
+    ['20170425', 10106.9, 10175.89, 10213.49, 10104.55, 16000075444, 0.83],
+    ['20170426', 10162.72, 10226.02, 10251.7, 10161.42, 14993670552, 0.6],
+    ['20170427', 10174.25, 10226.34, 10244.08, 10015.89, 28247961079, 0.21],
+    ['20170428', 10208.13, 10201.46, 10235.23, 10176.08, 15643493132, -0.27],
+    ['20170502', 10205.66, 10221.01, 10228.7, 10166.39, 18437819277, -0.13],
+    ['20170503', 10208.6, 10183.73, 10244.35, 10146.26, 19154381056, -0.39],
+    ['20170504', 10164.81, 10148.18, 10241.55, 10116.01, 20714381621, -0.35],
+    ['20170505', 10119.54, 10084.42, 10132.92, 10069.32, 15753955029, -0.62],
+    ['20170508', 10000.95, 9836.29, 10018.57, 9833.99, 21134679235, -1.88],
+    ['20170509', 9794.81, 9868.07, 9887.15, 9736.14, 16932046188, 0.35],
+    ['20170510', 9875.74, 9762.56, 9945.61, 9757.75, 18670199703, -1.24],
+    ['20170511', 9704.88, 9774.91, 9776.51, 9566.42, 22374397853, 0.19],
+    ['20170512', 9755.87, 9787.82, 9794.99, 9703.1, 17133238807, 0.12],
+    ['20170515', 9812.38, 9845.23, 9866.07, 9812.38, 15607739582, 0.58],
+    ['20170516', 9819.71, 10042.12, 10042.16, 9761.35, 21489529467, 2.0],
+    ['20170517', 10030.36, 10028.13, 10091.47, 10019.36, 21387281763, -0.18],
+    ['20170518', 9955.86, 9973.98, 10045.68, 9936.31, 17762527828, -0.56],
+    ['20170519', 9978.5, 9969.15, 10005.71, 9922.76, 15606963436, -0.05],
+    ['20170522', 9958.29, 9898.96, 10014.94, 9864.95, 17668221181, -0.72],
+    ['20170523', 9878.38, 9762.08, 9914.5, 9761.31, 19193181150, -1.39],
+    ['20170524', 9722.04, 9809.07, 9809.07, 9609.41, 16728568436, 0.46],
+    ['20170525', 9792.1, 9892.08, 9917.81, 9727.51, 21070414605, 0.81],
+    ['20170526', 9871.68, 9859.61, 9913.48, 9838.7, 17913991622, -0.35],
+    ['20170531', 9944.12, 9865.56, 9976.65, 9855.3, 18327161120, 0.06],
+    ['20170601', 9833.83, 9731.21, 9854.55, 9730.06, 17617867706, -1.35],
+    ['20170602', 9708.72, 9794.29, 9811.58, 9637.54, 17098206281, 0.66],
+    ['20170605', 9799.81, 9842.15, 9866.35, 9799.65, 15253968444, 0.48],
+    ['20170606', 9834.54, 9912.2, 9912.2, 9821.13, 14546003207, 0.71],
+    ['20170607', 9915.18, 10107.05, 10117.06, 9910.53, 22251134999, 1.93],
+    ['20170608', 10104.59, 10146.26, 10162.48, 10097.66, 20380380862, 0.36],
+    ['20170609', 10147.02, 10175.12, 10182.61, 10124.94, 18553834671, 0.26],
+    ['20170612', 10144.12, 10120.57, 10197.1, 10108.98, 17925525555, -0.56],
+    ['20170613', 10104.71, 10222.35, 10237.4, 10102.5, 17744137190, 1.01],
+    ['20170614', 10208.84, 10152.86, 10226.15, 10138.82, 17974547811, -0.7],
+    ['20170615', 10140.08, 10218.5, 10225.05, 10134.41, 20620825101, 0.66],
+    ['20170616', 10212.98, 10190.06, 10233.8, 10176.86, 17556337165, -0.31],
+    ['20170619', 10191.98, 10258.4, 10258.66, 10191.87, 17246735525, 0.66],
+    ['20170620', 10281.57, 10287.26, 10323.01, 10273.06, 19339429795, 0.24],
+    ['20170621', 10327.13, 10361.1, 10361.1, 10269.32, 18775969384, 0.71],
+    ['20170622', 10361.34, 10268.43, 10418.61, 10267.27, 21843407048, -0.95],
+    ['20170623', 10249.79, 10364.37, 10364.9, 10196.39, 19453569642, 0.97],
+    ['20170626', 10377.22, 10532.72, 10533.44, 10377.22, 20622616633, 1.6],
+    ['20170627', 10532.57, 10532.13, 10548.8, 10479.35, 18195723852, -0.05],
+    ['20170628', 10507.05, 10450.0, 10517.94, 10436.08, 17012337784, -0.81],
+    ['20170629', 10460.38, 10509.99, 10523.52, 10459.94, 16367210620, 0.56],
+    ['20170630', 10475.23, 10528.03, 10537.5, 10454.88, 15726987755, 0.15],
+    ['20170703', 10531.73, 10532.21, 10541.86, 10464.68, 17170486528, 0.02],
+    ['20170704', 10527.77, 10475.24, 10527.77, 10437.4, 17806658800, -0.57],
+    ['20170705', 10443.03, 10557.67, 10557.96, 10434.68, 18531477171, 0.79],
+    ['20170706', 10547.51, 10562.43, 10574.11, 10467.91, 21912748574, 0.01],
+    ['20170707', 10526.78, 10562.22, 10564.31, 10504.1, 21291746722, 0.0],
+    ['20170710', 10542.55, 10505.61, 10574.21, 10497.39, 23734693948, -0.55],
+    ['20170711', 10488.89, 10469.39, 10568.37, 10467.13, 21429411209, -0.34],
+    ['20170712', 10465.87, 10449.94, 10494.25, 10360.1, 21248640245, -0.17],
+    ['20170713', 10444.78, 10461.37, 10491.39, 10431.5, 19463992838, 0.08],
+    ['20170714', 10445.57, 10427.5, 10452.94, 10382.37, 17955352625, -0.37],
+    ['20170717', 10383.22, 10058.62, 10384.05, 10006.39, 27508029451, -3.54],
+    ['20170718', 10012.91, 10098.78, 10098.78, 9960.56, 20591432207, 0.43],
+    ['20170719', 10079.68, 10296.29, 10296.29, 10064.31, 25401144084, 1.91],
+    ['20170720', 10288.89, 10363.74, 10392.06, 10282.28, 23631726524, 0.66],
+    ['20170721', 10354.54, 10363.48, 10406.25, 10342.72, 20119767129, -0.03],
+    ['20170724', 10352.85, 10401.2, 10414.07, 10341.24, 22151823555, 0.35],
+    ['20170725', 10398.25, 10351.03, 10421.21, 10317.92, 19920284868, -0.51],
+    ['20170726', 10365.61, 10293.76, 10380.7, 10247.54, 21137669797, -0.57],
+    ['20170727', 10284.92, 10393.66, 10416.55, 10216.02, 27559917066, 0.94],
+    ['20170728', 10381.31, 10437.77, 10456.41, 10371.39, 22443393739, 0.41],
+    ['20170731', 10438.23, 10502.51, 10517.33, 10418.83, 25679466397, 0.62],
+    ['20170801', 10496.71, 10521.94, 10529.9, 10472.71, 25703843482, 0.16],
+    ['20170802', 10526.0, 10469.91, 10557.47, 10461.95, 27445679430, -0.53],
+    ['20170803', 10454.01, 10433.37, 10507.23, 10403.59, 25067421349, -0.34],
+    ['20170804', 10426.53, 10362.13, 10450.69, 10360.83, 26809877297, -0.71],
+    ['20170807', 10353.15, 10448.5, 10449.28, 10347.5, 21410296841, 0.84],
+    ['20170808', 10448.87, 10492.67, 10516.61, 10437.85, 25476830298, 0.4],
+    ['20170809', 10487.77, 10544.05, 10548.06, 10455.27, 23630185542, 0.46],
+    ['20170810', 10525.15, 10480.82, 10582.16, 10417.09, 24101328212, -0.6],
+    ['20170811', 10407.34, 10293.02, 10459.91, 10281.63, 25520692572, -1.79],
+    ['20170814', 10308.97, 10517.34, 10517.78, 10308.97, 22550375044, 2.2],
+    ['20170815', 10527.54, 10556.8, 10558.24, 10502.52, 20771414360, 0.35],
+    ['20170816', 10550.43, 10599.22, 10625.34, 10504.07, 23796779225, 0.37],
+    ['20170817', 10601.65, 10651.31, 10658.16, 10583.4, 24868798422, 0.48],
+    ['20170818', 10586.35, 10613.55, 10636.15, 10563.27, 21404411475, -0.38],
+    ['20170821', 10624.81, 10687.53, 10687.81, 10624.81, 20101246911, 0.69],
+    ['20170822', 10689.65, 10652.96, 10699.06, 10631.25, 20941737781, -0.34],
+    ['20170823', 10642.22, 10619.32, 10662.83, 10583.18, 19008521050, -0.33],
+    ['20170824', 10617.74, 10553.06, 10627.34, 10537.78, 17818503438, -0.62],
+    ['20170825', 10556.55, 10658.02, 10671.72, 10556.55, 19824879674, 1.0],
+    ['20170828', 10678.35, 10807.0, 10866.36, 10678.35, 27410224031, 1.39],
+    ['20170829', 10796.54, 10760.5, 10818.22, 10742.13, 23403076368, -0.46],
+    ['20170830', 10762.24, 10811.45, 10825.89, 10762.24, 22829483129, 0.46],
+    ['20170831', 10823.31, 10814.47, 10837.39, 10759.79, 21285879816, 0.0],
+    ['20170901', 10822.49, 10878.29, 10878.92, 10807.78, 25893696593, 0.57],
+    ['20170904', 10882.13, 10959.68, 10969.57, 10859.36, 27600096443, 0.73],
+    ['20170905', 10958.2, 10984.92, 10995.53, 10928.86, 24512574513, 0.2],
+    ['20170906', 10959.31, 11023.28, 11036.9, 10939.26, 25872321043, 0.33],
+    ['20170907', 11030.6, 10969.72, 11059.47, 10966.54, 27298266863, -0.5],
+    ['20170908', 10961.7, 10967.49, 11011.11, 10911.82, 23841690509, -0.01],
+    ['20170911', 10979.72, 11050.56, 11050.56, 10963.62, 24598263985, 0.73],
+    ['20170912', 11063.85, 11040.01, 11131.95, 11019.87, 31847852022, -0.12],
+    ['20170913', 11040.11, 11088.2, 11088.23, 11015.74, 23159196367, 0.4],
+    ['20170914', 11091.98, 11070.63, 11124.54, 11033.82, 25562734762, -0.19],
+    ['20170915', 11058.1, 11064.55, 11105.02, 11022.25, 24812380641, -0.05],
+    ['20170918', 11062.43, 11151.3, 11154.75, 11062.43, 22537598826, 0.8],
+    ['20170919', 11160.42, 11082.15, 11181.18, 11055.24, 23039833610, -0.64],
+    ['20170920', 11083.85, 11188.14, 11188.27, 11083.21, 23732454355, 0.94],
+    ['20170921', 11187.88, 11100.55, 11199.19, 11098.99, 23844466752, -0.81],
+    ['20170922', 11067.11, 11067.4, 11085.43, 11025.89, 21038641852, -0.28],
+    ['20170925', 11054.26, 10929.83, 11056.66, 10911.03, 19901075570, -1.26],
+    ['20170926', 10915.66, 10946.65, 10951.14, 10890.92, 18262947532, 0.15],
+    ['20170927', 10951.96, 11037.96, 11063.13, 10951.89, 18384323700, 0.8],
+    ['20170928', 11029.47, 11030.84, 11072.56, 11015.48, 19405310128, -0.05],
+    ['20170929', 11042.72, 11084.85, 11121.44, 11042.72, 19583521281, 0.48],
+    ['20171009', 11248.35, 11262.03, 11305.46, 11214.9, 23736800902, 1.58],
+    ['20171010', 11260.77, 11326.04, 11326.06, 11229.02, 23301393263, 0.55],
+    ['20171011', 11319.46, 11311.42, 11344.59, 11285.92, 24863854530, -0.16],
+    ['20171012', 11309.36, 11306.57, 11337.12, 11240.66, 21530313119, -0.05],
+    ['20171013', 11312.27, 11396.95, 11400.05, 11308.04, 21197999396, 0.79],
+    ['20171016', 11401.87, 11274.72, 11422.94, 11267.27, 25855317411, -1.09],
+    ['20171017', 11254.41, 11273.92, 11318.0, 11214.82, 17248044323, 0.02],
+    ['20171018', 11277.54, 11280.55, 11323.26, 11240.63, 19762774436, 0.05],
+    ['20171019', 11275.31, 11190.19, 11290.72, 11179.19, 20545034690, -0.82],
+    ['20171020', 11154.93, 11236.46, 11237.2, 11140.34, 16081349055, 0.42],
+    ['20171023', 11239.69, 11302.89, 11304.91, 11228.68, 17326301190, 0.57],
+    ['20171024', 11289.02, 11336.85, 11336.99, 11260.68, 17412818257, 0.27],
+    ['20171025', 11330.75, 11433.89, 11433.89, 11324.17, 17540222220, 0.84],
+    ['20171026', 11430.0, 11458.58, 11509.02, 11413.93, 20394531827, 0.19],
+    ['20171027', 11456.57, 11441.77, 11484.91, 11415.37, 19403549288, -0.17],
+    ['20171030', 11446.8, 11311.05, 11472.28, 11192.18, 24917995616, -1.17],
+    ['20171031', 11293.34, 11367.97, 11368.19, 11274.17, 17319348148, 0.49],
+    ['20171101', 11370.52, 11349.38, 11424.48, 11341.07, 18075370254, -0.16],
+    ['20171102', 11336.48, 11290.52, 11337.01, 11251.82, 20145649275, -0.53],
+    ['20171103', 11287.55, 11213.56, 11334.68, 11165.06, 19616390433, -0.7],
+    ['20171106', 11218.04, 11368.62, 11369.19, 11181.29, 19428449107, 1.37],
+    ['20171107', 11374.09, 11464.3, 11464.3, 11370.99, 21286609381, 0.8],
+    ['20171108', 11460.15, 11447.51, 11563.82, 11441.8, 23859267562, -0.18],
+    ['20171109', 11443.54, 11549.9, 11550.02, 11414.2, 20809134316, 0.9],
+    ['20171110', 11540.55, 11643.52, 11659.66, 11531.59, 22580036449, 0.78],
+    ['20171113', 11657.63, 11692.71, 11714.98, 11631.19, 23279379715, 0.41],
+    ['20171114', 11689.94, 11582.49, 11700.73, 11538.34, 24077800025, -0.96],
+    ['20171115', 11548.0, 11463.01, 11583.97, 11390.3, 20336320618, -1.04],
+    ['20171116', 11442.85, 11538.87, 11549.08, 11415.76, 20268529318, 0.67],
+    ['20171117', 11519.92, 11293.81, 11555.87, 11293.81, 26106819634, -2.12],
+    ['20171120', 11229.59, 11432.54, 11432.66, 11087.53, 20852699458, 1.24],
+    ['20171121', 11419.09, 11602.1, 11602.1, 11407.4, 23790997946, 1.44],
+    ['20171122', 11598.04, 11560.8, 11666.13, 11454.26, 22824848529, -0.36],
+    ['20171123', 11520.04, 11175.47, 11520.04, 11162.53, 22412635764, -3.33],
+    ['20171124', 11135.07, 11168.39, 11225.2, 11058.99, 18369957085, -0.06],
+    ['20171127', 11126.78, 10954.18, 11126.78, 10936.14, 18451796419, -1.92],
+    ['20171128', 10938.4, 11091.14, 11091.14, 10936.4, 16598743503, 1.25],
+    ['20171129', 11095.91, 11082.13, 11108.45, 10936.99, 19243164360, -0.08],
+    ['20171130', 11036.75, 10944.1, 11079.93, 10908.7, 17507247120, -1.25],
+    ['20171201', 10941.87, 11013.15, 11077.43, 10926.77, 16820831330, 0.63],
+    ['20171204', 11007.19, 11014.55, 11099.83, 10993.51, 17754756852, 0.01],
+    ['20171205', 10988.07, 10854.76, 11044.18, 10801.4, 20142323796, -1.45],
+    ['20171206', 10838.04, 10911.33, 10911.33, 10716.29, 18460178736, 0.52],
+    ['20171207', 10886.26, 10801.25, 10925.2, 10795.84, 15835434031, -1.01],
+    ['20171208', 10789.17, 10935.06, 10964.79, 10789.17, 16549855334, 1.24],
+    ['20171211', 10962.18, 11143.26, 11143.26, 10962.18, 17875605077, 1.9],
+    ['20171212', 11145.75, 11043.21, 11176.58, 11043.21, 17482299128, -0.9],
+    ['20171213', 11030.02, 11143.89, 11143.89, 11019.59, 15565967995, 0.91],
+    ['20171214', 11138.46, 11110.18, 11165.61, 11070.98, 17010336926, -0.3],
+    ['20171215', 11092.15, 10998.12, 11104.82, 10970.73, 18171164866, -1.01],
+    ['20171218', 10991.11, 10960.12, 11046.1, 10916.19, 15194061452, -0.35],
+    ['20171219', 10964.14, 11075.0, 11077.18, 10963.8, 15093018575, 1.05],
+    ['20171220', 11072.41, 11003.33, 11079.13, 10988.9, 16708248429, -0.65],
+    ['20171221', 10988.77, 11118.25, 11149.04, 10935.22, 17770954841, 1.04],
+    ['20171222', 11112.73, 11094.16, 11154.75, 11078.26, 15065530409, -0.22],
+    ['20171225', 11102.16, 11005.5, 11132.59, 10967.37, 17171806813, -0.8],
+    ['20171226', 11002.34, 11021.83, 11025.1, 10900.64, 16551629912, 0.15],
+    ['20171227', 11007.44, 10911.21, 11026.73, 10911.21, 17926131618, -1.0],
+    ['20171228', 10907.83, 10974.01, 11029.09, 10891.76, 18289471506, 0.58],
+    ['20171229', 10984.86, 11040.45, 11040.62, 10971.64, 15579432520, 0.61],
+  ],
+  symbol: '399001',
+  name: '\u6df1\u8bc1\u6210\u6307',
 };
 
-let canvas = new ZE.Canvas('container', {
-  width: 1000,
-  height: 600,
-  style: {
-    fillStyle: '#fff',
+// 计算5日和十日平均值
+let fiveStart = 0, tenStart = 0, fiveTotal = 0, tenTotal = 0;
+const data = kLineData.data;
+kLineData.data.forEach((item, index, arr) => {
+  const closePrice = item[1];
+  fiveTotal += closePrice;
+  tenTotal += closePrice;
+  let fiveAver = null, tenAver = null;
+  if (index > 3) {
+    fiveTotal -= fiveStart;
+    fiveAver = fiveTotal / 5;
+    fiveStart = arr[index - 4][1];
   }
+  if (index > 8) {
+    tenTotal -= tenStart;
+    tenAver = tenTotal / 10;
+    tenStart = arr[index - 9][1];
+  }
+  const lastIndex = Math.max(index - 1, 0);
+  data[lastIndex][7] = fiveAver;
+  data[lastIndex][8] = tenAver;
 });
 
-function addText (text, color, delay = 0) {
-  const fontSize = getRandomNum(16, 32);
-  canvas.addShape('text', {
+function clamp(value, min, max) {
+  if (value < min) {
+    value = min;
+  } else if (value > max) {
+    value = max;
+  }
+  return value;
+}
+
+const padding = 50;
+const width = 1000;
+const height = 800;
+const contentHeight = height - 2 * padding;
+const contentWidth = width - 2 * padding;
+const scaleLength = 5; // 刻度线的长度
+const downStyle = '#0CF49B';
+const upStyle = '#FD1050';
+
+const { Canvas, Utils } = ZE;
+
+const canvas = new Canvas('container', {
+  width,
+  height,
+  style: {
+    fillStyle: 'white',
+    strokeStyle: 'white',
+  },
+});
+
+// 数据信息展示框
+const infoRectW = 150;
+const infoRectH = 180;
+const infoPadding = 20;
+const infoWidth = infoRectW + infoPadding * 2;
+const infoHeight = infoRectH + infoPadding * 2;
+let infoLayer, infoText, candleLayer, horizontally, horText, dayLine;
+
+function initLayers() {
+  // 信息窗
+  infoLayer = canvas.addLayer({zIndex: 9, visible: false});
+  infoLayer.addShape('rect', {
     attrs: {
-      x: 1000,
-      y: getRandomNum(600 - fontSize),
-      text
+      x: infoPadding,
+      y: infoPadding,
+      w: infoRectW,
+      h: infoRectH,
+      opacity: 0.6,
+      radius: 5,
     },
     style: {
-      fillStyle: color,
-      fontSize,
-      textBaseline: 'top'
+      fillStyle: 'black',
+      shadowBlur: 10,
+      shadowColor: 'black',
     },
-    animate: {
-      props: {
-        x: -50
-      },
-      duration: getRandomNum(8000, 16000),
-      callback,
-      delay,
-      // repeat: true
+  });
+
+  infoLayer.move = Utils.throttle((e) => {
+    let x = e.x, y = e.y;
+    if (x > width - infoWidth) {
+      x = e.x - infoWidth;
+    }
+    if (y > height - infoHeight) {
+      y = e.y - infoHeight;
+    }
+    infoLayer
+      .animate({
+        props: {
+          x,
+          y,
+        },
+        duration: 150,
+        effect: 'easeOut'
+      });
+  }, 100);
+
+  infoText = infoLayer.addShape('text', {
+    attrs: {
+      x: infoPadding * 2,
+      y: infoPadding * 2,
+      text: ['日期: -', '开盘: 0', '收盘: 0', '最高: 0', '最低: 0', '涨跌比: 0%', '5日均值：-', '10日均值: -'],
+    },
+    style: {
+      fillStyle: 'white',
+    },
+  });
+  // 水平信息
+  horizontally = canvas.addLayer({ visible: false });
+  horizontally.addShape('line', {
+    attrs: {
+      x1: padding,
+      y1: 20,
+      x2: padding + contentWidth,
+      y2: 20,
+      opacity: 0.5
+    },
+    style: {
+      lineDash: 5
+    }
+  });
+  horizontally.addShape('rect', {
+    attrs: {
+      x: 0,
+      y: 0,
+      w: padding - 2,
+      h: 20,
+      opacity: 0.8,
+      radius: 2
+    },
+    style: {
+      fillStyle: 'black'
+    }
+  });
+  horText = horizontally.addShape('text', {
+    attrs: {
+      x: padding - 4,
+      y: 18,
+      text: '0',
+    },
+    style: {
+      textBaseline: 'bottom',
+      textAlign: 'right'
+    }
+  });
+  // 蜡烛图的图层
+  candleLayer = canvas.addLayer({
+    attrs: {
+      x: padding,
+      y: padding,
+      width: contentWidth,
+      height: contentHeight,
     },
     event: {
-      click (e) {
-        console.log(e);
-      }
+      mouseenter() {
+        infoLayer.show();
+        horizontally.show();
+      },
+      mousemove: (e) => {
+        infoLayer.move(e);
+        horizontally.setAttrs({
+          y: e.y - 20
+        });
+        const { min, ratio } = candleLayer.value;
+        const text = 0 | (min + (contentHeight - e.y + padding) / ratio);
+        horText.setAttrs({
+          text
+        });
+      },
+      mouseout() {
+        infoLayer.hide();
+        horizontally.hide();
+      },
+    },
+  });
+  candleLayer.boxTrigger(false);
+
+  dayLine = candleLayer.addShape('line', {
+    attrs: {
+      x1: 0,
+      y1: contentHeight,
+      x2: 0,
+      y2: 0
+    },
+    zIndex: 9,
+    visible: false,
+    style: {
+      strokeStyle: '#ffe065',
+    },
+  });
+  candleLayer.on('mouseenter', () => {  dayLine.show();  });
+  candleLayer.on('mouseout', () => {  dayLine.hide();  });
+}
+
+function drawAxis(max, min, dayStep, data) {
+  const rows = 5;
+  let columns = 5;
+  let cycle = Math.floor(data.length / columns);
+  if (cycle === 0) {
+    cycle = 1;
+    columns = data.length;
+  }
+  const range = max - min;
+  const yStep = range / rows;
+  // y axis
+  canvas.addShape('line', {
+    attrs: {
+      x1: padding,
+      y1: padding - scaleLength,
+      x2: padding,
+      y2: padding + contentHeight,
+    },
+  });
+  for (let i = 0; i <= rows; i++) {
+    canvas.addShape('line', {
+      attrs: {
+        x1: padding - scaleLength,
+        y1: padding + i * contentHeight / rows,
+        x2: padding,
+        y2: padding + i * contentHeight / rows,
+      },
+    });
+    canvas.addShape('text', {
+      attrs: {
+        x: padding - scaleLength * 2,
+        y: padding + i * contentHeight / rows,
+        text: max - yStep * i,
+      },
+      style: {
+        textAlign: 'right',
+        textBaseline: 'middle',
+      },
+    });
+  }
+  // x axis
+  const cycleStep = dayStep * cycle;
+  const half = dayStep / 2;
+
+  canvas.addShape('line', {
+    attrs: {
+      x1: padding,
+      y1: padding + contentHeight,
+      x2: width - padding + scaleLength + half,
+      y2: padding + contentHeight,
+    },
+  });
+
+  for (let j = 0; j <= columns; j++) {
+    const startX = padding + half;
+    const positionX = j === 0 ? startX : cycleStep * j + startX - dayStep;
+    const cycleEndDay = j === 0 ? 0 : j * cycle - 1;
+    canvas.addShape('line', {
+      attrs: {
+        x1: positionX,
+        y1: padding + contentHeight,
+        x2: positionX,
+        y2: padding + contentHeight + scaleLength,
+      },
+    });
+    canvas.addShape('text', {
+      attrs: {
+        x: positionX,
+        y: padding + contentHeight + scaleLength * 2,
+        text: data[cycleEndDay][0],
+      },
+      style: {
+        textAlign: 'center',
+        textBaseline: 'top',
+      },
+    });
+  }
+}
+
+function drawCandle(max, min, dayStep, data) {
+  const range = max - min;
+  const ratio = contentHeight / range;
+  const stepCenter = dayStep / 2;
+  const candleWidth = dayStep * 0.8;
+  candleLayer.value = { max, min, ratio };
+  const fivePoints = [], tenPoints = [];
+  data.forEach((item, index) => {
+    const isUp = item[6] > 0;
+    const styleColor = isUp ? upStyle : downStyle;
+    const open = item[1];
+    const close = item[2];
+    const height = item[3];
+    const low = item[4];
+    const fiveAver = item[7];
+    const tenAver = item[8];
+
+    const startY = contentHeight - (Math.max(close, open) - min) * ratio;
+    const h = Math.abs(close - open);
+    const positionX = stepCenter + dayStep * index;
+    if (fiveAver != null) {
+      fivePoints.push([positionX, contentHeight - (fiveAver - min) * ratio]);
+    }
+    if (tenAver != null) {
+      tenPoints.push([positionX, contentHeight - (tenAver - min) * ratio]);
+    }
+
+    candleLayer.addShape('rect', {
+      attrs: {
+        x: positionX - candleWidth / 2,
+        y: startY,
+        w: candleWidth,
+        h: h * ratio,
+      },
+      zIndex: 2,
+      style: {
+        fillStyle: styleColor,
+      },
+    });
+    candleLayer.addShape('line', {
+      attrs: {
+        x1: positionX,
+        y1: contentHeight - (height - min) * ratio,
+        x2: positionX,
+        y2: contentHeight - (low - min) * ratio,
+      },
+      zIndex: 1,
+      style: {
+        strokeStyle: styleColor,
+      },
+    });
+
+    candleLayer.addShape('rect', {
+      attrs: {
+        x: positionX - dayStep / 2,
+        y: 0,
+        w: dayStep,
+        h: contentHeight,
+      },
+      zIndex: -1,
+      visible: false,
+      event: {
+        mouseenter() {
+          const { x, w } = this.attrs;
+          const lineX = x + w / 2;
+          dayLine.setAttrs({ x1: lineX, x2: lineX });
+          infoText.setAttrs({
+            text: [
+              `日期: ${item[0]}`,
+              `开盘: ${open}`,
+              `收盘: ${close}`,
+              `最高: ${height}`,
+              `最低: ${low}`,
+              `涨跌比: ${item[6]}%`,
+              `5日均值：${item[7] == null ? '-' : (0 | item[7])}`,
+              `10日均值: ${item[8] == null ? '-' : (0 | item[8])}`
+            ],
+          });
+        },
+        // mouseout() {
+        //   dayLine.hide();
+        // },
+      },
+    });
+
+  });
+
+  candleLayer.addShape('polyline', {
+    attrs: {
+      points: fivePoints
+    },
+    zIndex: 5
+  });
+  candleLayer.addShape('polyline', {
+    attrs: {
+      points: tenPoints
+    },
+    zIndex: 6,
+    style: {
+      strokeStyle: 'yellow'
     }
   });
 }
 
-function addShape (count = 500) {
-  const { shapes } = canvas.computed;
-  if (shapes < count) {
-    for (let i = 0; i < count - shapes; i++) {
-      addText(i, ['#fff', 'blue', 'green', 'red'][ i % 4], getRandomNum(20000));
+function draw(data) {
+  canvas.clear();
+  let max = -Infinity, min = Infinity;
+  data.forEach(item => {
+    if (item[3] > max) {
+      max = item[3];
     }
-  }
+    if (min > item[4]) {
+      min = item[4];
+    }
+    if (item[7] && min > item[7]) {
+      min = item[7];
+    }
+    if (item[8] && min > item[8]) {
+      min = item[8];
+    }
+  });
+  max = Math.ceil(max / 10) * 10;
+  min = Math.floor(min / 10) * 10;
+  const dayStep = 0 | (contentWidth / data.length);
+  initLayers();
+  drawAxis(max, min, dayStep, data);
+  drawCandle(max, min, dayStep, data);
+  canvas.element.style.backgroundColor = '#21202D';
+  canvas.draw();
 }
 
+function getData(start, end) {
+  const length = data.length;
+  start = Math.round(start * length);
+  end = Math.round(end * length);
+  return data.slice(start, end);
+}
 
-const layer = canvas.addLayer({zIndex: -2});
-
-layer.addShape('video', {
-  attrs: {
-    x: 0,
-    y: 0,
-    w: canvas.width,
-    h: canvas.height,
-    video: 'https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8',
+draw(getData(0, 0.2));
+// 滑块部分
+function initSlider (width, sliderScale, onChange) {
+  const wrap = document.getElementById('content') || document.body;
+  const progressEle = document.createElement('div');
+  const slider = document.createElement('div');
+  let box = progressEle.getBoundingClientRect();
+  const sliderWidth = 0 | (width * sliderScale);
+  let mousedown = false;
+  let start = { x: 0, diff: 0, left: 0 };
+  progressEle.className = 'progress';
+  progressEle.style.width = `${width}px`;
+  slider.className = 'slider';
+  slider.style.width = `${sliderWidth}px`;
+  function downHandle (e) {
+    const sliderBox = slider.getBoundingClientRect();
+    box = progressEle.getBoundingClientRect();
+    start = { x: e.x, diff: e.x - sliderBox.left, left: sliderBox.left };
+    mousedown = true;
+    document.addEventListener('mousemove', moveHandle, false);
+    e.stopPropagation();
+    e.preventDefault();
   }
-});
 
- const ctx = canvas.getContext();
- ctx.canvas.style.background = '#333';
+  function upHandle () {
+    if (mousedown) {
+      mousedown = false;
+      start = { x: 0, diff: 0, left: 0 };
+      document.removeEventListener('mousemove', moveHandle);
+    }
+  }
 
- addShape();
+  function moveHandle (e) {
+    if (mousedown) {
+      const diffX = e.x - start.x;
+      const progress = clamp(start.left - box.left + diffX, 0, width - sliderWidth);
+     //  console.log(progress);
+      // hightLight.style.width = `${progress}px`;
+      slider.style.left = `${progress}px`;
+      const startScale = progress / width;
+      const data = { start: startScale, end: startScale + sliderScale };
+      onChange && onChange(data);
+    }
+  }
 
- setInterval(addShape, 8000);
-canvas.draw();
+  slider.addEventListener('mousedown', downHandle, false);
+
+  document.addEventListener('mouseup', upHandle, false);
+  progressEle.appendChild(slider);
+  wrap.appendChild(progressEle);
+}
+
+function sliderChange (value) {
+  draw(getData(value.start, value.end));
+}
+
+initSlider(width, 0.2, sliderChange);

@@ -44,7 +44,9 @@ const inner = 100;
 const duration = 800;
 const cx = 400, cy = 300;
 
-const canvas = new ZE.Canvas('container', {
+const { Canvas, Utils } = ZE;
+
+const canvas = new Canvas('container', {
   width: 800,
   height: 600,
   style: {
@@ -88,28 +90,16 @@ const ringLayer = canvas.addLayer({
       canvas.element.style.cursor = 'pointer';
       infoLayer.show();
     },
-    mousemove: (e) => {
-      infoLayer.setAttrs({
-        x: e.x,
-        y: e.y
-      }).update();
-      // const x = e.x + 20;
-      // const y = e.y;
-      // const l = Math.sqrt(
-      //   Math.pow(x - infoLayer.attrs.x, 2),
-      //   Math.pow(y - infoLayer.attrs.y, 2),
-      // );
-      // if (l > 20) {
-      //   infoLayer.animate({
-      //     props: {
-      //       x,
-      //       y
-      //     },
-      //     duration: 100,
-      //     effect: 'easeOut'
-      //   });
-      // }
-    },
+    mousemove: Utils.throttle((e) => {
+      infoLayer.animate({
+        props: {
+          x: e.x,
+          y: e.y
+        },
+        duration: 120,
+        effect: 'easeOut'
+      });
+    }, 100),
     mouseout () {
       canvas.element.style.cursor = 'auto';
       infoLayer.hide();

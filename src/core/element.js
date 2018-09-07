@@ -142,7 +142,7 @@ export default class Element {
     }
     const animateCount = canvas.computed.animate;
     canvas._setComputed({animate: animateCount - 1});
-    canvas.draw();
+    // canvas.draw();
     cb && cb(this);
   };
 

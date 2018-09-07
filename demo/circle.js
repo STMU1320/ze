@@ -16,9 +16,9 @@ const canvas = new ZE.Canvas('container', {
 });
 
 function addShape (count = 500) {
-  const { shapeLength } = canvas.computed;
-  if (shapeLength < count) {
-    for (let i = 0; i < count - shapeLength; i++) {
+  const { shapes } = canvas.computed;
+  if (shapes < count) {
+    for (let i = 0; i < count - shapes; i++) {
       canvas.addShape('circle', {
         attrs: {
           x: getRandomNum(10, 980),

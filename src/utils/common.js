@@ -7,6 +7,7 @@ export { default as clone } from 'lodash/clone';
 export { default as cloneDeep } from 'lodash/cloneDeep';
 export { default as isNil } from 'lodash/isNil';
 export { default as debounce } from 'lodash/debounce';
+export { default as throttle } from 'lodash/throttle';
 export { default as findLastIndex } from 'lodash/findLastIndex';
 export { default as differenceBy } from 'lodash/differenceBy';
 
